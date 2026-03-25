@@ -106,6 +106,7 @@
       },
       "AeroScape.Server.Core/1.0.0": {
         "dependencies": {
+          "Microsoft.Extensions.Hosting.Abstractions": "10.0.5",
           "Microsoft.Extensions.Logging.Abstractions": "10.0.5"
         },
         "runtime": {

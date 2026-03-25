@@ -14,3 +14,5 @@
 /home/aeroverra/.openclaw/workspace/projects/aeroscape-dotnet/AeroScape.Server.Data/obj/Debug/net10.0/AeroScape.Server.Data.pdb
 /home/aeroverra/.openclaw/workspace/projects/aeroscape-dotnet/AeroScape.Server.Data/obj/Debug/net10.0/ref/AeroScape.Server.Data.dll
 /home/aeroverra/.openclaw/workspace/projects/aeroscape-dotnet/AeroScape.Server.Data/obj/Debug/net10.0/AeroScape.Server.Data.sourcelink.json
+/home/aeroverra/.openclaw/workspace/projects/aeroscape-dotnet/AeroScape.Server.Data/bin/Debug/net10.0/AeroScape.Server.Data.runtimeconfig.json
+/home/aeroverra/.openclaw/workspace/projects/aeroscape-dotnet/AeroScape.Server.Data/obj/Debug/net10.0/AeroScape.Server.Data.genruntimeconfig.cache

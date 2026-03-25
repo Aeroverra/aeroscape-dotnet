@@ -1,11 +1,17 @@
 {
   "version": 2,
-  "dgSpecHash": "2UC1YwniYTE=",
+  "dgSpecHash": "o2QSqA8pfs4=",
   "success": true,
   "projectFilePath": "/home/aeroverra/.openclaw/workspace/projects/aeroscape-dotnet/AeroScape.Server.Core/AeroScape.Server.Core.csproj",
   "expectedPackageFiles": [
+    "/home/aeroverra/.nuget/packages/microsoft.extensions.configuration.abstractions/10.0.5/microsoft.extensions.configuration.abstractions.10.0.5.nupkg.sha512",
     "/home/aeroverra/.nuget/packages/microsoft.extensions.dependencyinjection.abstractions/10.0.5/microsoft.extensions.dependencyinjection.abstractions.10.0.5.nupkg.sha512",
-    "/home/aeroverra/.nuget/packages/microsoft.extensions.logging.abstractions/10.0.5/microsoft.extensions.logging.abstractions.10.0.5.nupkg.sha512"
+    "/home/aeroverra/.nuget/packages/microsoft.extensions.diagnostics.abstractions/10.0.5/microsoft.extensions.diagnostics.abstractions.10.0.5.nupkg.sha512",
+    "/home/aeroverra/.nuget/packages/microsoft.extensions.fileproviders.abstractions/10.0.5/microsoft.extensions.fileproviders.abstractions.10.0.5.nupkg.sha512",
+    "/home/aeroverra/.nuget/packages/microsoft.extensions.hosting.abstractions/10.0.5/microsoft.extensions.hosting.abstractions.10.0.5.nupkg.sha512",
+    "/home/aeroverra/.nuget/packages/microsoft.extensions.logging.abstractions/10.0.5/microsoft.extensions.logging.abstractions.10.0.5.nupkg.sha512",
+    "/home/aeroverra/.nuget/packages/microsoft.extensions.options/10.0.5/microsoft.extensions.options.10.0.5.nupkg.sha512",
+    "/home/aeroverra/.nuget/packages/microsoft.extensions.primitives/10.0.5/microsoft.extensions.primitives.10.0.5.nupkg.sha512"
   ],
   "logs": []
 }
