@@ -9,6 +9,7 @@ using AeroScape.Server.Core.Handlers;
 using AeroScape.Server.Core.Messages;
 using AeroScape.Server.Core.Session;
 using AeroScape.Server.Data;
+using AeroScape.Server.Core.World;
 using AeroScape.Server.Network.Listeners;
 using AeroScape.Server.Network.Login;
 using AeroScape.Server.Network.Protocol;
@@ -45,6 +46,9 @@ builder.Services.AddDbContext<AeroScapeDbContext>(options =>
 builder.Services.AddSingleton<IPlayerSessionManager, PlayerSessionManager>();
 builder.Services.AddSingleton<GameEngine>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<GameEngine>());
+
+// ── Map data service ─────────────────────────────────────────────────────────
+builder.Services.AddSingleton<MapDataService>();
 
 // ── Login service ────────────────────────────────────────────────────────────
 builder.Services.AddSingleton<IPlayerLoginService, PlayerLoginService>();
@@ -111,5 +115,10 @@ using (var scope = host.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AeroScapeDbContext>();
     await db.Database.EnsureCreatedAsync();
 }
+
+// Load map region XTEA keys from data file
+var mapDataService = host.Services.GetRequiredService<MapDataService>();
+var mapDataPath = Path.Combine(AppContext.BaseDirectory, "Data", "mapdata", "1.dat");
+mapDataService.LoadRegions(mapDataPath);
 
 host.Run();

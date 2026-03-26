@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using AeroScape.Server.Core.Engine;
 using AeroScape.Server.Core.Session;
+using AeroScape.Server.Core.World;
 using AeroScape.Server.Network.Frames;
 using AeroScape.Server.Network.Login;
 using AeroScape.Server.Network.Protocol;
@@ -23,6 +24,7 @@ public sealed class TcpBackgroundService : BackgroundService
     private readonly PacketRouter _router;
     private readonly GameEngine _engine;
     private readonly IPlayerLoginService _loginService;
+    private readonly MapDataService _mapData;
 
     /// <summary>Game port — classic RS 508 default.</summary>
     private const int DefaultPort = 43594;
@@ -32,13 +34,15 @@ public sealed class TcpBackgroundService : BackgroundService
         IPlayerSessionManager sessions,
         PacketRouter router,
         GameEngine engine,
-        IPlayerLoginService loginService)
+        IPlayerLoginService loginService,
+        MapDataService mapData)
     {
         _logger       = logger;
         _sessions     = sessions;
         _router       = router;
         _engine       = engine;
         _loginService = loginService;
+        _mapData      = mapData;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -129,7 +133,7 @@ public sealed class TcpBackgroundService : BackgroundService
             // ═══════════════════════════════════════════════════════════════
             var netStream = session.GetStream();
             await LoginFrames.SendLoginSequenceAsync(
-                netStream, player, loginResult.UsingHD, stoppingToken);
+                netStream, player, loginResult.UsingHD, _mapData, stoppingToken);
 
             // ═══════════════════════════════════════════════════════════════
             // Phase 3: Game packet processing (pipe-based)

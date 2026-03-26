@@ -2,6 +2,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using AeroScape.Server.Core.Entities;
+using AeroScape.Server.Core.World;
 
 namespace AeroScape.Server.Network.Frames;
 
@@ -16,7 +17,7 @@ public static class LoginFrames
     /// This gets the client past the loading screen and into the game world.
     /// </summary>
     public static async Task SendLoginSequenceAsync(
-        Stream stream, Player player, bool usingHD, CancellationToken ct)
+        Stream stream, Player player, bool usingHD, MapDataService mapData, CancellationToken ct)
     {
         var w = new FrameWriter(8192);
 
@@ -47,7 +48,7 @@ public static class LoginFrames
         w.WriteByte(2);
 
         // ── 4. Map region ───────────────────────────────────────────────
-        WriteMapRegion(w, player);
+        WriteMapRegion(w, player, mapData);
 
         await w.FlushToAsync(stream, ct);
 
@@ -176,8 +177,8 @@ public static class LoginFrames
         w.WriteWord(interfaceId);
     }
 
-    /// <summary>Frame 142 (var-size word): setMapRegion</summary>
-    private static void WriteMapRegion(FrameWriter w, Player p)
+    /// <summary>Frame 142 (var-size word): setMapRegion with XTEA keys from MapDataService</summary>
+    private static void WriteMapRegion(FrameWriter w, Player p, MapDataService mapData)
     {
         // Calculate map region from absolute coordinates
         p.MapRegionX = (p.AbsX >> 3) - 6;
@@ -200,15 +201,31 @@ public static class LoginFrames
         {
             for (int yCalc = (p.MapRegionY - 6) / 8; yCalc <= (p.MapRegionY + 6) / 8; yCalc++)
             {
+                // Region id formula from Frames.java:
+                //   int region = yCalc + (xCalc << 8);
+                // Java used << 1786653352, but Java masks shift to & 31 → 1786653352 % 32 = 8
+                int region = (xCalc << 8) + yCalc;
+
                 if (forceSend ||
                     (yCalc != 49 && yCalc != 149 && yCalc != 147 &&
                      xCalc != 50 && (xCalc != 49 || yCalc != 47)))
                 {
-                    // We don't have map data loaded yet — send zeros (client handles missing data)
-                    w.WriteDWord(0);
-                    w.WriteDWord(0);
-                    w.WriteDWord(0);
-                    w.WriteDWord(0);
+                    int[]? keys = mapData.GetMapData(region);
+                    if (keys != null)
+                    {
+                        w.WriteDWord(keys[0]);
+                        w.WriteDWord(keys[1]);
+                        w.WriteDWord(keys[2]);
+                        w.WriteDWord(keys[3]);
+                    }
+                    else
+                    {
+                        // No XTEA keys for this region — send zeroes (client treats as unencrypted)
+                        w.WriteDWord(0);
+                        w.WriteDWord(0);
+                        w.WriteDWord(0);
+                        w.WriteDWord(0);
+                    }
                 }
             }
         }
