@@ -83,6 +83,9 @@ public sealed class PacketRouter
         Reg(new NpcExamineDecoder(),      88);
         Reg(new ObjectExamineDecoder(),   84);
         Reg(new TradeAcceptDecoder(),     253);
+
+        // Legacy PacketManager paths that are currently consume-and-ignore in the C# port.
+        Reg(new NoOpDecoder(),            42, 43, 62, 99, 117, 127, 189, 190, 200, 247, 248);
     }
 
     /// <summary>
@@ -130,6 +133,12 @@ public sealed class PacketRouter
                 ? (rawOpcode - session.InCipher.NextInt()) & 0xFF
                 : rawOpcode & 0xFF;
 
+            if ((uint)opcode >= ProtocolDictionary.Incoming.Length)
+            {
+                _logger.LogWarning("Invalid opcode {Opcode} for session {SessionId}", opcode, session.SessionId);
+                break;
+            }
+
             var def = ProtocolDictionary.Incoming[opcode];
             int size = def.Size;
 
@@ -145,8 +154,17 @@ public sealed class PacketRouter
             }
             else if (size == PacketDefinition.UnknownSize)
             {
-                // Undocumented packet — consume whatever remains in this read.
-                size = (int)(reader.Remaining);
+                _logger.LogDebug("Stopping on unknown-size opcode {Opcode} for session {SessionId}", opcode, session.SessionId);
+                reader.Rewind(1);
+                break;
+            }
+
+            if (size < 0 || size >= 500)
+            {
+                _logger.LogWarning(
+                    "Rejecting packet opcode {Opcode} with invalid size {Size} for session {SessionId}",
+                    opcode, size, session.SessionId);
+                break;
             }
 
             if (reader.Remaining < size)

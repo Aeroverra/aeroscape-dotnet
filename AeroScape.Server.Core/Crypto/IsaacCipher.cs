@@ -9,7 +9,7 @@ public sealed class IsaacCipher
 {
     private const int SizeLog = 8;
     private const int Size = 1 << SizeLog; // 256
-    private const int Mask = Size - 1;     // 0xFF
+    private const int Mask = (Size - 1) << 2; // 0x3FC, ISAAC indexes 256-word state by word offset
 
     private int _count;
     private readonly int[] _results = new int[Size];
@@ -46,26 +46,26 @@ public sealed class IsaacCipher
             x = _mem[i];
             _a ^= _a << 13;
             _a += _mem[j++];
-            _mem[i] = y = _mem[(x & Mask) >> 0] + _a + _b;      // Note: >> 0 is intentional (matches reference)
-            _results[i++] = _b = _mem[((y >> SizeLog) & Mask)] + x;
+            _mem[i] = y = _mem[(x & Mask) >> 2] + _a + _b;
+            _results[i++] = _b = _mem[((y >> SizeLog) & Mask) >> 2] + x;
 
             x = _mem[i];
             _a ^= (int)((uint)_a >> 6);
             _a += _mem[j++];
-            _mem[i] = y = _mem[(x & Mask) >> 0] + _a + _b;
-            _results[i++] = _b = _mem[((y >> SizeLog) & Mask)] + x;
+            _mem[i] = y = _mem[(x & Mask) >> 2] + _a + _b;
+            _results[i++] = _b = _mem[((y >> SizeLog) & Mask) >> 2] + x;
 
             x = _mem[i];
             _a ^= _a << 2;
             _a += _mem[j++];
-            _mem[i] = y = _mem[(x & Mask) >> 0] + _a + _b;
-            _results[i++] = _b = _mem[((y >> SizeLog) & Mask)] + x;
+            _mem[i] = y = _mem[(x & Mask) >> 2] + _a + _b;
+            _results[i++] = _b = _mem[((y >> SizeLog) & Mask) >> 2] + x;
 
             x = _mem[i];
             _a ^= (int)((uint)_a >> 16);
             _a += _mem[j++];
-            _mem[i] = y = _mem[(x & Mask) >> 0] + _a + _b;
-            _results[i++] = _b = _mem[((y >> SizeLog) & Mask)] + x;
+            _mem[i] = y = _mem[(x & Mask) >> 2] + _a + _b;
+            _results[i++] = _b = _mem[((y >> SizeLog) & Mask) >> 2] + x;
         }
 
         for (j = 0; j < Size / 2; )
@@ -73,26 +73,26 @@ public sealed class IsaacCipher
             x = _mem[i];
             _a ^= _a << 13;
             _a += _mem[j++];
-            _mem[i] = y = _mem[(x & Mask) >> 0] + _a + _b;
-            _results[i++] = _b = _mem[((y >> SizeLog) & Mask)] + x;
+            _mem[i] = y = _mem[(x & Mask) >> 2] + _a + _b;
+            _results[i++] = _b = _mem[((y >> SizeLog) & Mask) >> 2] + x;
 
             x = _mem[i];
             _a ^= (int)((uint)_a >> 6);
             _a += _mem[j++];
-            _mem[i] = y = _mem[(x & Mask) >> 0] + _a + _b;
-            _results[i++] = _b = _mem[((y >> SizeLog) & Mask)] + x;
+            _mem[i] = y = _mem[(x & Mask) >> 2] + _a + _b;
+            _results[i++] = _b = _mem[((y >> SizeLog) & Mask) >> 2] + x;
 
             x = _mem[i];
             _a ^= _a << 2;
             _a += _mem[j++];
-            _mem[i] = y = _mem[(x & Mask) >> 0] + _a + _b;
-            _results[i++] = _b = _mem[((y >> SizeLog) & Mask)] + x;
+            _mem[i] = y = _mem[(x & Mask) >> 2] + _a + _b;
+            _results[i++] = _b = _mem[((y >> SizeLog) & Mask) >> 2] + x;
 
             x = _mem[i];
             _a ^= (int)((uint)_a >> 16);
             _a += _mem[j++];
-            _mem[i] = y = _mem[(x & Mask) >> 0] + _a + _b;
-            _results[i++] = _b = _mem[((y >> SizeLog) & Mask)] + x;
+            _mem[i] = y = _mem[(x & Mask) >> 2] + _a + _b;
+            _results[i++] = _b = _mem[((y >> SizeLog) & Mask) >> 2] + x;
         }
     }
 

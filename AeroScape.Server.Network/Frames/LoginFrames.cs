@@ -82,34 +82,33 @@ public static class LoginFrames
             WriteSetInterface(w, 1, 548, 83, 589);   // Clan tab
             WriteSetInterface(w, 1, 548, 84, 261);   // Setting tab
             WriteSetInterface(w, 1, 548, 85, 464);   // Emote tab
-            WriteSetInterface(w, 1, 548, 86, 239);   // Music tab
+            WriteSetInterface(w, 1, 548, 86, 187);   // Music tab
             WriteSetInterface(w, 1, 548, 87, 182);   // Logout tab
         }
         else
         {
-            WriteSetInterface(w, 1, 746, 6, 745);
-            WriteSetInterface(w, 1, 746, 11, 751);
-            WriteSetInterface(w, 1, 746, 68, 752);
-            WriteSetInterface(w, 1, 746, 64, 748);
-            WriteSetInterface(w, 1, 746, 65, 749);
-            WriteSetInterface(w, 1, 746, 66, 750);
-            WriteSetInterface(w, 1, 746, 67, 747);
-            WriteSetInterface(w, 1, 746, 8, 137);
-            WriteSetInterface(w, 1, 746, 73, 92);
-            WriteSetInterface(w, 1, 746, 74, 320);
-            WriteSetInterface(w, 1, 746, 75, 274);
-            WriteSetInterface(w, 1, 746, 76, 149);
-            WriteSetInterface(w, 1, 746, 77, 387);
-            WriteSetInterface(w, 1, 746, 78, 271);
-            WriteSetInterface(w, 1, 746, 79, 192);
-            WriteSetInterface(w, 1, 746, 80, 662);
-            WriteSetInterface(w, 1, 746, 81, 550);
-            WriteSetInterface(w, 1, 746, 82, 551);
-            WriteSetInterface(w, 1, 746, 83, 589);
-            WriteSetInterface(w, 1, 746, 84, 261);
-            WriteSetInterface(w, 1, 746, 85, 464);
-            WriteSetInterface(w, 1, 746, 86, 239);
-            WriteSetInterface(w, 1, 746, 87, 182);
+            WriteSetInterface(w, 1, 549, 0, 746);    // Main interface
+            WriteSetInterface(w, 1, 752, 8, 137);    // Player name on chat
+            WriteSetInterface(w, 1, 746, 87, 92);    // Attack tab
+            WriteSetInterface(w, 1, 746, 88, 320);   // Skill tab
+            WriteSetInterface(w, 1, 746, 89, 274);   // Quest tab
+            WriteSetInterface(w, 1, 746, 90, 149);   // Inventory tab
+            WriteSetInterface(w, 1, 746, 91, 387);   // Equipment tab
+            WriteSetInterface(w, 1, 746, 92, 271);   // Prayer tab
+            WriteSetInterface(w, 1, 746, 93, 192);   // Magic tab
+            WriteSetInterface(w, 1, 746, 95, 550);   // Friend tab
+            WriteSetInterface(w, 1, 746, 96, 551);   // Ignore tab
+            WriteSetInterface(w, 1, 746, 97, 589);   // Clan tab
+            WriteSetInterface(w, 1, 746, 98, 261);   // Setting tab
+            WriteSetInterface(w, 1, 746, 99, 464);   // Emote tab
+            WriteSetInterface(w, 1, 746, 65, 752);   // Chatbox
+            WriteSetInterface(w, 1, 746, 18, 751);   // Chat options
+            WriteSetInterface(w, 1, 746, 13, 748);   // HP bar
+            WriteSetInterface(w, 1, 746, 14, 749);   // Prayer bar
+            WriteSetInterface(w, 1, 746, 15, 750);   // Energy bar
+            WriteSetInterface(w, 1, 746, 12, 747);   // Summoning bar
+            WriteSetInterface(w, 1, 746, 100, 187);  // Music tab
+            WriteSetInterface(w, 1, 746, 101, 182);  // Logout tab
         }
 
         await w.FlushToAsync(stream, ct);
