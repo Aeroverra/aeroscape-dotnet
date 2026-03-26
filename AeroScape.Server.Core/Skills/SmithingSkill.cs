@@ -242,7 +242,7 @@ public class SmithingSkill
     /// <param name="amount">How many to smelt.</param>
     public void SmeltOre(int oreItemId, int amount = 1)
     {
-        var smelt = FindSmeltByOre(oreItemId);
+        var smelt = FindSmeltByOre(oreItemId, ItemCount(453));
         if (smelt == null)
             return;
 
@@ -308,8 +308,17 @@ public class SmithingSkill
         return null;
     }
 
-    public static SmeltDefinition? FindSmeltByOre(int oreItemId)
+    public static SmeltDefinition? FindSmeltByOre(int oreItemId, int coalCount = 0)
     {
+        if (oreItemId == 440)
+        {
+            if (coalCount >= 2)
+                return FindSmeltByBar(2353);
+            if (coalCount == 0)
+                return FindSmeltByBar(2351);
+            return null;
+        }
+
         foreach (var s in Smelts)
         {
             foreach (var (reqItem, _) in s.OreRequirements)
@@ -318,6 +327,13 @@ public class SmithingSkill
                     return s;
             }
         }
+        return null;
+    }
+
+    private static SmeltDefinition? FindSmeltByBar(int barItemId)
+    {
+        foreach (var s in Smelts)
+            if (s.BarItemId == barItemId) return s;
         return null;
     }
 

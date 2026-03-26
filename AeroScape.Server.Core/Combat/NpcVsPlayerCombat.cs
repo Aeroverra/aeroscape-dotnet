@@ -138,9 +138,13 @@ public class NpcVsPlayerCombat
     {
         if (target.PrayerIcon == 0) // Protect from Melee
         {
-            // ~60% block rate (simplified from Hitter counter)
-            if (CombatFormulas.Random(4) < 3)
+            if (target.Hitter > 0)
+            {
+                target.Hitter--;
                 return 0;
+            }
+
+            target.Hitter = 2 + CombatFormulas.Random(4);
         }
         return maxHit;
     }

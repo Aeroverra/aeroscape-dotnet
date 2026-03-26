@@ -86,23 +86,19 @@ public sealed class MagicService(PlayerItemsService playerItems)
         if (player.MagicDelay > 0 || player.SkillLvl[6] < ModernLevelRequirements[25] || !HasRunes(player, (561, 1), (554, 4)))
             return false;
 
-        foreach (var recipe in SuperheatRecipes)
-        {
-            if (recipe.OreItemId != itemId || player.SkillLvl[13] < recipe.SmithLevel)
-                continue;
+        var recipe = FindSuperheatRecipe(player, itemId);
+        if (recipe == null || player.SkillLvl[13] < recipe.Value.SmithLevel)
+            return false;
 
-            if (!HasRunes(player, (561, 1), (554, 4)) || !HasRunes(player, recipe.Requirements))
-                return false;
+        if (!HasRunes(player, (561, 1), (554, 4)) || !HasRunes(player, recipe.Value.Requirements))
+            return false;
 
-            ConsumeRunes(player, (561, 1), (554, 4));
-            ConsumeRunes(player, recipe.Requirements);
-            playerItems.AddItem(player, recipe.BarItemId, 1);
-            player.AddSkillXP(ModernSpellXp[25] * 3, 6);
-            player.MagicDelay = 3;
-            return true;
-        }
-
-        return false;
+        ConsumeRunes(player, (561, 1), (554, 4));
+        ConsumeRunes(player, recipe.Value.Requirements);
+        playerItems.AddItem(player, recipe.Value.BarItemId, 1);
+        player.AddSkillXP(ModernSpellXp[25] * 3, 6);
+        player.MagicDelay = 3;
+        return true;
     }
 
     public bool TryEnchant(Player player, int spellId, int itemId)
@@ -168,9 +164,13 @@ public sealed class MagicService(PlayerItemsService playerItems)
         ConsumeRunes(player, runes);
         player.TeleX = x;
         player.TeleY = y;
-        player.AbsX = x;
-        player.AbsY = y;
-        player.DidTeleport = true;
+        player.TeleDelay = 4;
+        player.ClickDelay = 6;
+        player.TeleFinishGfx = 1577;
+        player.TeleFinishGfxHeight = 0;
+        player.TeleFinishAnim = 8941;
+        player.RequestAnim(8939, 0);
+        player.RequestGfx(1576, 0);
         player.AddSkillXP(ModernSpellXp[buttonId] * 3, 6);
         return true;
     }
@@ -224,4 +224,36 @@ public sealed class MagicService(PlayerItemsService playerItems)
         [855687168] = new(68, ModernSpellXp[51], [(564, 1), (561, 1), (554, 15)], new Dictionary<int, int> { [1645] = 2572, [1700] = 1735, [11092] = 11194 }),
         [1023459328] = new(87, ModernSpellXp[60], [(564, 1), (554, 20), (565, 20)], new Dictionary<int, int> { [1647] = 2574, [1702] = 1737, [11115] = 11195, [6581] = 6583 }),
     };
+
+    private SuperheatRecipe? FindSuperheatRecipe(Player player, int oreItemId)
+    {
+        if (oreItemId == 440)
+        {
+            var coalCount = playerItems.InvItemCount(player, 453);
+            if (coalCount >= 2)
+                return GetSuperheatRecipeByBar(2353);
+            if (coalCount == 0)
+                return GetSuperheatRecipeByBar(2351);
+            return null;
+        }
+
+        foreach (var recipe in SuperheatRecipes)
+        {
+            if (recipe.OreItemId == oreItemId)
+                return recipe;
+        }
+
+        return null;
+    }
+
+    private static SuperheatRecipe? GetSuperheatRecipeByBar(int barItemId)
+    {
+        foreach (var recipe in SuperheatRecipes)
+        {
+            if (recipe.BarItemId == barItemId)
+                return recipe;
+        }
+
+        return null;
+    }
 }

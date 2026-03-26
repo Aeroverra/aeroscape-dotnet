@@ -102,7 +102,7 @@ public class PlayerVsPlayerCombat
         int weaponId = attacker.Equipment[CombatConstants.SlotWeapon];
 
         // ── Special attack handling ────────────────────────────────────────
-        if (attacker.UsingSpecial && WeaponData.SpecialAttacks.TryGetValue(weaponId, out var spec))
+        if (attacker.UsingSpecial && WeaponData.PlayerVsPlayerSpecialAttacks.TryGetValue(weaponId, out var spec))
         {
             if (attacker.SpecialAmount >= spec.EnergyCost)
             {
@@ -118,7 +118,6 @@ public class PlayerVsPlayerCombat
 
                 if (spec.IsMultiHit)
                 {
-                    // Dragon claws multi-hit
                     ProcessDragonClawsSpec(attacker, target, hitDamage);
                 }
                 else
@@ -198,9 +197,9 @@ public class PlayerVsPlayerCombat
         }
 
         // ── Fire ranged attack ─────────────────────────────────────────────
-        int maxHit = CombatFormulas.MaxRangeHit(
-            attacker.SkillLvl[CombatConstants.SkillRanged],
-            attacker.EquipmentBonus[CombatConstants.BonusRangeAttack]);
+        int maxHit = CombatFormulas.MaxMeleeHit(
+            attacker.SkillLvl[CombatConstants.SkillStrength],
+            attacker.EquipmentBonus[CombatConstants.BonusStrength]);
         int hitDamage = CombatFormulas.Random(maxHit);
 
         attacker.RequestAnim(attacker.AttackEmote, 0);
@@ -237,7 +236,10 @@ public class PlayerVsPlayerCombat
         attacker.CombatDelay = attacker.AttackDelay;
         attacker.RequestFaceTo(target.PlayerId + 32768);
 
-        target.AppendHit(CombatFormulas.Random(30), 0);
+        int maxHit = CombatFormulas.MaxMeleeHit(
+            attacker.SkillLvl[CombatConstants.SkillStrength],
+            attacker.EquipmentBonus[CombatConstants.BonusStrength]);
+        target.AppendHit(CombatFormulas.Random(maxHit), 0);
         target.RequestAnim(424, 0);
         target.FreezeDelay = 10;
         target.RequestGfx(8, 100);
@@ -249,17 +251,14 @@ public class PlayerVsPlayerCombat
     /// </summary>
     private static void ProcessDragonClawsSpec(Player attacker, Player target, int hitDamage)
     {
-        int secHit = hitDamage / 2;
-        int thirdHit = secHit / 2;
-        int fourHit = thirdHit > 0 ? thirdHit - 1 : 0;
-
-        target.AppendHit(hitDamage, 0);
-        target.AppendHit(secHit, 0);
-        // Third and fourth hits are queued — in the Java source these were applied
-        // via a clawTimer that ticked down. For now we apply them immediately
-        // as the update mask supports two hits per tick already.
-        // Additional hits will land next tick via the player's pending hit queue.
-        // TODO: Implement delayed hit queue for 3rd/4th claw hits.
+        attacker.SecondHit = hitDamage / 2;
+        attacker.ThirdHit = attacker.SecondHit / 2;
+        attacker.FourthHit = attacker.ThirdHit > 0 ? attacker.ThirdHit - 1 : 0;
+        attacker.secHit = attacker.SecondHit;
+        attacker.fourHit = attacker.FourthHit;
+        target.AppendHit(attacker.SecondHit, 0);
+        attacker.ClawTimer = 1;
+        attacker.UseClaws = true;
     }
 
     /// <summary>
@@ -267,8 +266,12 @@ public class PlayerVsPlayerCombat
     /// </summary>
     private static void ProcessVengeance(Player attacker, Player target, int hitDamage)
     {
-        // Vengeance not yet tracked on Player — will be added as VengOn property.
-        // When implemented: recoil 75% of damage, force chat "Taste Vengeance!"
+        if (!target.VengOn || hitDamage <= 0)
+            return;
+
+        attacker.AppendHit((hitDamage / 4) * 3, 0);
+        target.RequestForceChat("Taste Vengeance!");
+        target.VengOn = false;
     }
 
     /// <summary>
@@ -287,10 +290,13 @@ public class PlayerVsPlayerCombat
 
         if (target.PrayerIcon == requiredIcon)
         {
-            // Java uses a "Hitter" counter that blocks some hits and lets others through.
-            // Simplified: protection prayer blocks ~60% of damage on average.
-            if (CombatFormulas.Random(4) < 3) // 60% chance to block
+            if (target.Hitter > 0)
+            {
+                target.Hitter--;
                 return 0;
+            }
+
+            target.Hitter = 2 + CombatFormulas.Random(4);
         }
 
         return hitDamage;

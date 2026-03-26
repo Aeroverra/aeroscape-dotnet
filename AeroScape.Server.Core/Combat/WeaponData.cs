@@ -55,7 +55,7 @@ public static class WeaponData
     /// Key = weapon item ID, Value = special attack definition.
     /// Ported from PlayerCombat.attackPlayer and PlayerNPCCombat.attackNPC.
     /// </summary>
-    public static readonly FrozenDictionary<int, SpecialAttack> SpecialAttacks =
+    public static readonly FrozenDictionary<int, SpecialAttack> PlayerVsPlayerSpecialAttacks =
         new Dictionary<int, SpecialAttack>
         {
             // Armadyl Godsword
@@ -65,7 +65,7 @@ public static class WeaponData
             // Saradomin Godsword
             [11698] = new(75, 1.3, 7071, 1220, 0, false),
             // Zamorak Godsword
-            [11700] = new(75, 1.3, 7070, 1221, 0, false),
+            [11700] = new(50, 1.3, 7070, 1221, 0, false),
             // Abyssal Whip
             [4151] = new(50, 1.3, 1658, -1, 341, false),
             // Dragon Claws (multi-hit, handled specially)
@@ -89,6 +89,26 @@ public static class WeaponData
             [7807] = new(100, 0, 1978, 1222, -1, false),
             [7808] = new(75, 0, 1978, 1222, -1, false),
             [7809] = new(50, 0, 1978, 1222, -1, false),
+        }.ToFrozenDictionary();
+
+    /// <summary>
+    /// NPC combat special attacks intentionally differ from PvP in the legacy Java server.
+    /// This table matches PlayerNPCCombat.java exactly and omits specials that were not allowed.
+    /// </summary>
+    public static readonly FrozenDictionary<int, SpecialAttack> PlayerVsNpcSpecialAttacks =
+        new Dictionary<int, SpecialAttack>
+        {
+            [11694] = new(50, 1.25, 7074, 1222, 0, false),
+            [11696] = new(100, 1.1, 7073, 1223, 0, false),
+            [11698] = new(75, 1.1, 7071, 1220, 0, false),
+            [11700] = new(50, 1.1, 7070, 1221, 0, false),
+            [4151] = new(50, 0.9, 1658, -1, 341, false),
+            [3101] = new(50, 1.1, 2068, 274, -1, true),
+            [1305] = new(25, 1.0, 1058, 248, -1, false),
+            [4587] = new(70, 1.0, 2081, 347, -1, false),
+            [1434] = new(40, 1.1, 1060, 251, -1, false),
+            [3204] = new(100, 1.1, 1665, 282, -1, false),
+            [5698] = new(25, 1.0, 1062, 252, -1, false),
         }.ToFrozenDictionary();
 }
 

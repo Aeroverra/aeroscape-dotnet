@@ -62,6 +62,12 @@ public class PlayerVsNpcCombat
         int distance = CombatFormulas.GetDistance(npc.AbsX, npc.AbsY, attacker.AbsX, attacker.AbsY);
 
         // Autocast magic takes priority
+        if (attacker.AutoCasting && !MagicNpcService.HasAutocastStaff(attacker))
+        {
+            attacker.AutoCasting = false;
+            attacker.AutoCastSpellId = -1;
+        }
+
         if (attacker.AutoCastSpellId > 0)
         {
             ProcessMagicAttack(attacker, npc, attacker.AutoCastSpellId);
@@ -90,7 +96,7 @@ public class PlayerVsNpcCombat
         int weaponId = attacker.Equipment[CombatConstants.SlotWeapon];
 
         // ── Special attack handling ────────────────────────────────────────
-        if (attacker.UsingSpecial && WeaponData.SpecialAttacks.TryGetValue(weaponId, out var spec))
+        if (attacker.UsingSpecial && WeaponData.PlayerVsNpcSpecialAttacks.TryGetValue(weaponId, out var spec))
         {
             if (attacker.SpecialAmount >= spec.EnergyCost)
             {
@@ -106,12 +112,13 @@ public class PlayerVsNpcCombat
 
                 if (spec.IsMultiHit)
                 {
-                    // Dragon claws
-                    int secHit = hitDamage / 2;
-                    int thirdHit = secHit / 2;
-                    int fourHit = thirdHit > 0 ? thirdHit - 1 : 0;
-                    npc.AppendHit(secHit, 0);
-                    // 3rd/4th hits applied next tick — see TODO on delayed hit queue
+                    hitDamage = CombatFormulas.SpecialMaxHit(maxHit, spec.DamageMultiplier);
+                    attacker.secHit2 = hitDamage / 2;
+                    attacker.thirdHit2 = attacker.secHit2 / 2;
+                    attacker.fourHit2 = attacker.thirdHit2 > 0 ? attacker.thirdHit2 - 1 : 0;
+                    npc.AppendHit(attacker.secHit2, 0);
+                    attacker.clawTimer2 = 1;
+                    attacker.UseClaws2 = true;
                 }
                 else
                 {
@@ -132,6 +139,11 @@ public class PlayerVsNpcCombat
             {
                 attacker.UsingSpecial = false;
             }
+        }
+        else if (attacker.UsingSpecial)
+        {
+            attacker.UsingSpecial = false;
+            attacker.RequestAnim(attacker.AttackEmote, 0);
         }
         else
         {
@@ -172,6 +184,11 @@ public class PlayerVsNpcCombat
         int ammoCount = attacker.EquipmentN[CombatConstants.SlotAmmo];
         int weaponId = attacker.Equipment[CombatConstants.SlotWeapon];
 
+        int meleeMaxHit = CombatFormulas.MaxMeleeHit(
+            attacker.SkillLvl[CombatConstants.SkillStrength],
+            attacker.EquipmentBonus[CombatConstants.BonusStrength]);
+        int meleeSeedHit = CombatFormulas.Random(meleeMaxHit);
+
         // Crystal bow — no ammo
         if (weaponId == 4214)
         {
@@ -180,10 +197,7 @@ public class PlayerVsNpcCombat
             attacker.CombatDelay = attacker.AttackDelay;
             attacker.RequestFaceTo(npc.NpcId);
 
-            int damage = CombatFormulas.Random(
-                CombatFormulas.MaxRangeHit(attacker.SkillLvl[CombatConstants.SkillRanged],
-                    attacker.EquipmentBonus[CombatConstants.BonusRangeAttack]));
-            npc.AppendHit(damage, 0);
+            npc.AppendHit(meleeSeedHit, 0);
             npc.RequestAnim(npc.DefendEmote, 0);
             RetaliateNpc(npc, attacker);
             return;
@@ -321,7 +335,13 @@ public class PlayerVsNpcCombat
             if (matchesTask)
             {
                 attacker.SlayerAmount--;
-                int slayerXp = npcType == 5363 ? 500 : npcType is 4387 or 6998 ? 400 : 250;
+                int slayerXp = npcType switch
+                {
+                    941 or 55 or 53 => 150,
+                    5363 => 500,
+                    4387 or 6998 => 400,
+                    _ => 250,
+                };
                 attacker.AddSkillXP(slayerXp * attacker.SkillLvl[CombatConstants.SkillSlayer],
                     CombatConstants.SkillSlayer);
             }
