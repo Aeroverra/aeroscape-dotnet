@@ -20,6 +20,7 @@ public sealed class PlayerEquipmentService(ItemDefinitionLoader items, PlayerIte
     private static readonly string[] Body =
     [
         "platebody", "chainbody", "blouse", "robetop", "leathertop", "platemail", "top", "brassard", "Robe top", "body",
+        "Saradomin plate",
         "chestplate", "torso", "shirt", "Varrock armour", "Prince tunic", "Runecrafter robe", "Zamorak d'hide", "Guthix d'hide", "Saradomin d'hide"
     ];
     private static readonly string[] Legs =
@@ -61,6 +62,31 @@ public sealed class PlayerEquipmentService(ItemDefinitionLoader items, PlayerIte
             return false;
         }
 
+        if (itemId == 4021)
+        {
+            player.NpcType = 1463;
+            player.AppearanceUpdateReq = true;
+            player.UpdateReq = true;
+        }
+
+        if (targetSlot == 2 && player.Equipment[2] == 4021 && itemId != 4021)
+        {
+            player.NpcType = -1;
+            player.AppearanceUpdateReq = true;
+            player.UpdateReq = true;
+        }
+
+        if (itemId == 12842)
+        {
+            for (var i = 0; i < 13; i++)
+            {
+                if (i != 12 && i != 3 && player.Equipment[i] != -1)
+                {
+                    return false;
+                }
+            }
+        }
+
         if (targetSlot == 3 && IsTwoHanded(itemId) && player.Equipment[5] != -1 && playerItems.FreeSlotCount(player) < 1)
         {
             return false;
@@ -90,6 +116,18 @@ public sealed class PlayerEquipmentService(ItemDefinitionLoader items, PlayerIte
 
             player.Equipment[3] = -1;
             player.EquipmentN[3] = 0;
+        }
+
+        if (items.IsStackable(itemId) && player.Equipment[targetSlot] == itemId)
+        {
+            player.EquipmentN[targetSlot] += amount;
+            playerItems.DeleteItem(player, itemId, slot, amount);
+            ApplyWeaponState(player);
+            CheckSpecials(player);
+            RecalculateBonuses(player);
+            player.AppearanceUpdateReq = true;
+            player.UpdateReq = true;
+            return true;
         }
 
         player.Equipment[targetSlot] = itemId;
@@ -322,10 +360,15 @@ public sealed class PlayerEquipmentService(ItemDefinitionLoader items, PlayerIte
     private int GetMagicRequirement(int itemId) => itemId switch
     {
         6914 or 6918 or 6920 or 6922 or 6924 => 60,
+        1393 => 30,
+        2415 or 2416 or 2417 => 60,
+        4170 => 50,
         4675 => 60,
+        3385 or 3387 or 3389 or 3391 or 3393 => 40,
+        7399 or 7400 => 40,
         _ => items.GetItemName(itemId) switch
         {
-            "Ahrims hood" or "Ahrims robetop" or "Ahrims robeskirt" or "Master wand" => 70,
+            "Ahrims hood" or "Ahrims robetop" or "Ahrims robeskirt" or "Ahrims staff" or "Master wand" => 70,
             "Infinity hat" or "Infinity top" or "Infinity bottoms" or "Ancient staff" => 50,
             "Mystic hat" or "Mystic robe top" or "Mystic robe bottom" or "Mystic gloves" or "Mystic boots" => 40,
             _ => 0
@@ -336,6 +379,8 @@ public sealed class PlayerEquipmentService(ItemDefinitionLoader items, PlayerIte
     {
         1203 => 40,
         6528 or 6523 or 6525 or 6527 => 60,
+        3122 => 50,
+        11724 or 11726 or 11728 => 70,
         _ => 0
     };
 
@@ -343,6 +388,9 @@ public sealed class PlayerEquipmentService(ItemDefinitionLoader items, PlayerIte
     {
         1215 or 1231 or 5680 or 5698 => 40,
         4151 or 4153 or 4587 or 1305 or 1434 => 70,
+        4675 or 13406 => 50,
+        4710 => 70,
+        6523 or 6525 or 6527 => 60,
         7158 or 11694 or 11696 or 11698 or 11700 or 11730 => 75,
         3204 => 50,
         10887 or 11061 => 60,
@@ -357,12 +405,17 @@ public sealed class PlayerEquipmentService(ItemDefinitionLoader items, PlayerIte
         return 0;
     }
 
-    private int GetCraftingRequirement(int itemId) => itemId == 1597 ? 40 : 0;
+    private int GetCraftingRequirement(int itemId) => itemId is 13614 or 13619 or 13624 ? 70 : 0;
 
     private int GetDefenceRequirement(int itemId) => itemId switch
     {
         3140 or 1127 => 40,
         2497 or 2495 or 2493 or 2491 or 2489 or 2487 => 40,
+        10551 => 40,
+        3122 => 50,
+        4224 => 70,
+        6615 or 6621 => 10,
+        11724 or 11726 or 11728 => 70,
         _ => GetDefenceRequirementByName(items.GetItemName(itemId))
     };
 

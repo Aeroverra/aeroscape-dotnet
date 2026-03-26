@@ -217,17 +217,27 @@ public class NPC
     /// Per-tick process: follow player, handle respawn countdown, delegate combat.
     /// Mirrors NPC.process() from Java.
     /// </summary>
-    public void Process()
+    public void Process(Player?[] players)
     {
         if (FollowPlayer != 0)
         {
-            if (Owner is not null && (!Owner.Online || Owner.IsDead))
+            var followTarget = Owner;
+            if (followTarget is null && FollowPlayer > 0 && FollowPlayer < players.Length)
+            {
+                followTarget = players[FollowPlayer];
+            }
+
+            if (followTarget is null)
             {
                 IsDead = true;
             }
-            else if (Owner is not null)
+            else if (!followTarget.Online || followTarget.IsDead)
             {
-                AppendPlayerFollowing(Owner);
+                IsDead = true;
+            }
+            else
+            {
+                AppendPlayerFollowing(followTarget);
             }
         }
 
@@ -248,6 +258,11 @@ public class NPC
             FollowCounter = 0;
             RequestFaceCoords(3333, 3333);
             RequestFaceTo(-1);
+            return;
+        }
+
+        if (AttackPlayer != player.PlayerId)
+        {
             return;
         }
 

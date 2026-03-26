@@ -1,5 +1,6 @@
 using AeroScape.Server.Core.Combat;
 using AeroScape.Server.Core.Entities;
+using AeroScape.Server.Core.Items;
 using AeroScape.Server.Core.Util;
 using AeroScape.Server.Core.World;
 
@@ -73,10 +74,12 @@ public sealed class GameFrames
 
     private static int _messageCounter = 1;
     private readonly MapDataService _mapData;
+    private readonly ItemDefinitionLoader _items;
 
-    public GameFrames(MapDataService mapData)
+    public GameFrames(MapDataService mapData, ItemDefinitionLoader items)
     {
         _mapData = mapData;
+        _items = items;
     }
 
     public void CreateObject(FrameWriter w, Player p, int objectId, int objectX, int objectY, int face, int type)
@@ -587,6 +590,7 @@ public sealed class GameFrames
         p.AppearanceUpdateReq = true;
         p.UpdateReq = true;
         p.CalculateEquipmentBonus();
+        SetWeaponTab(w, p);
         return true;
     }
 
@@ -689,11 +693,8 @@ public sealed class GameFrames
             SetTab(w, p, 76, 149);
             SetTab(w, p, 77, 387);
             SetTab(w, p, 78, 271);
-            SetInterface(w, 1, 548, 79, p.Equipment[CombatConstants.SlotWeapon] == 4675 ? 193 : 192);
-            if (p.Equipment[CombatConstants.SlotWeapon] == 4675)
-            {
-                p.AutoCastSpellId = 1;
-            }
+            p.IsAncients = p.Equipment[CombatConstants.SlotWeapon] == 4675 ? 1 : 0;
+            SetInterface(w, 1, 548, 79, p.IsAncients == 1 ? 193 : 192);
             SetTab(w, p, 81, 550);
             SetTab(w, p, 82, 551);
             SetTab(w, p, 83, 589);
@@ -712,7 +713,8 @@ public sealed class GameFrames
             SetInterface(w, 1, 746, 90, 149);
             SetInterface(w, 1, 746, 91, 387);
             SetInterface(w, 1, 746, 92, 271);
-            SetInterface(w, 1, 746, 93, p.Equipment[CombatConstants.SlotWeapon] == 4675 ? 193 : 192);
+            p.IsAncients = p.Equipment[CombatConstants.SlotWeapon] == 4675 ? 1 : 0;
+            SetInterface(w, 1, 746, 93, p.IsAncients == 1 ? 193 : 192);
             SetInterface(w, 1, 746, 95, 550);
             SetInterface(w, 1, 746, 96, 551);
             SetInterface(w, 1, 746, 97, 589);
@@ -727,6 +729,8 @@ public sealed class GameFrames
             SetInterface(w, 1, 746, 100, 187);
             SetInterface(w, 1, 746, 101, 182);
         }
+
+        SetWeaponTab(w, p);
     }
 
     public void SetConfigs(FrameWriter w, Player p)
@@ -737,6 +741,122 @@ public sealed class GameFrames
         SetConfig(w, 465, -1);
         SetConfig(w, 802, -1);
         SetConfig(w, 1085, 249852);
+    }
+
+    public void SetWeaponTab(FrameWriter w, Player p)
+    {
+        int weaponId = p.Equipment[CombatConstants.SlotWeapon];
+        string weapon = _items.GetItemName(weaponId);
+        int attackTabId = p.UsingHd ? 87 : 73;
+        int childId;
+
+        if (weaponId == -1)
+        {
+            childId = 92;
+            if (p.AttackStyle == 3)
+            {
+                p.AttackStyle = 2;
+                SetConfig(w, 43, 2);
+            }
+        }
+        else if (weapon == "Abyssal whip")
+        {
+            childId = 93;
+            if (p.AttackStyle == 3)
+            {
+                p.AttackStyle = 2;
+                SetConfig(w, 43, 2);
+            }
+        }
+        else if (weapon is "Granite maul" or "Tzhaar-ket-om" or "Torags hammers")
+        {
+            childId = 76;
+            if (p.AttackStyle == 3)
+            {
+                p.AttackStyle = 2;
+                SetConfig(w, 43, 2);
+            }
+        }
+        else if (weapon == "Veracs flail" || weapon.EndsWith("mace", StringComparison.Ordinal))
+        {
+            childId = 88;
+        }
+        else if (weapon.EndsWith("crossbow", StringComparison.Ordinal) || weapon.EndsWith(" c'bow", StringComparison.Ordinal))
+        {
+            childId = 79;
+            if (p.AttackStyle == 3)
+            {
+                p.AttackStyle = 2;
+                SetConfig(w, 43, 2);
+            }
+        }
+        else if (weapon.EndsWith("bow", StringComparison.Ordinal) || weapon.EndsWith("bow full", StringComparison.Ordinal) || weapon == "Seercull")
+        {
+            childId = 77;
+            if (p.AttackStyle == 3)
+            {
+                p.AttackStyle = 2;
+                SetConfig(w, 43, 2);
+            }
+        }
+        else if (weapon.StartsWith("Staff", StringComparison.Ordinal) || weapon.EndsWith("staff", StringComparison.Ordinal) || weapon == "Toktz-mej-tal")
+        {
+            childId = 90;
+        }
+        else if (weapon.EndsWith("dart", StringComparison.Ordinal) || weapon.EndsWith("knife", StringComparison.Ordinal) || weapon.EndsWith("thrownaxe", StringComparison.Ordinal) || weapon == "Toktz-xil-ul")
+        {
+            childId = 91;
+            if (p.AttackStyle == 3)
+            {
+                p.AttackStyle = 2;
+                SetConfig(w, 43, 2);
+            }
+        }
+        else if (weapon.EndsWith("dagger", StringComparison.Ordinal) || weapon.EndsWith("dagger(s)", StringComparison.Ordinal) || weapon.EndsWith("dagger(+)", StringComparison.Ordinal) || weapon.EndsWith("dagger(p)", StringComparison.Ordinal))
+        {
+            childId = 89;
+        }
+        else if (weapon.EndsWith("pickaxe", StringComparison.Ordinal))
+        {
+            childId = 83;
+        }
+        else if (weapon.EndsWith("axe", StringComparison.Ordinal) || weapon.EndsWith("battleaxe", StringComparison.Ordinal))
+        {
+            childId = 75;
+        }
+        else if (weapon.EndsWith("halberd", StringComparison.Ordinal))
+        {
+            childId = 84;
+            if (p.AttackStyle == 3)
+            {
+                p.AttackStyle = 2;
+                SetConfig(w, 43, 2);
+            }
+        }
+        else if (weapon.EndsWith("spear", StringComparison.Ordinal) || weapon == "Guthans warspear")
+        {
+            childId = 85;
+            if (p.AttackStyle == 3)
+            {
+                p.AttackStyle = 2;
+                SetConfig(w, 43, 2);
+            }
+        }
+        else if (weapon.EndsWith("claws", StringComparison.Ordinal))
+        {
+            childId = 78;
+        }
+        else if (weapon.EndsWith("2h sword", StringComparison.Ordinal) || weapon.EndsWith("godsword", StringComparison.Ordinal) || weapon == "Saradomin sword")
+        {
+            childId = 81;
+        }
+        else
+        {
+            childId = 82;
+        }
+
+        SetTab(w, p, attackTabId, childId);
+        SetString(w, weapon, childId, 0);
     }
 
     public void SetWelcome(FrameWriter w)

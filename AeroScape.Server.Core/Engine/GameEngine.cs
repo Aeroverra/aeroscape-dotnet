@@ -372,7 +372,7 @@ public class GameEngine : BackgroundService
             if (n == null)
                 continue;
 
-            n.Process();
+            n.Process(Players);
 
             if (!n.IsDead)
             {
@@ -411,6 +411,28 @@ public class GameEngine : BackgroundService
         {
             CWarsTimer = 240;
             CWGameTime = -1;
+        }
+
+        var zamorakCarrier = ZamorakP > 0 && ZamorakP < Players.Length ? Players[ZamorakP] : null;
+        if (zamorakCarrier == null)
+        {
+            ZamorakFlag = false;
+            ZamorakP = 0;
+        }
+        else if (ZamorakP > 0)
+        {
+            ZamorakFlag = true;
+        }
+
+        var saradominCarrier = SaradominP > 0 && SaradominP < Players.Length ? Players[SaradominP] : null;
+        if (saradominCarrier == null)
+        {
+            SaradominFlag = false;
+            SaradominP = 0;
+        }
+        else if (SaradominP > 0)
+        {
+            SaradominFlag = true;
         }
     }
 
@@ -608,6 +630,16 @@ public class GameEngine : BackgroundService
 
         // Home teleport sequence
         if (p.HomeTeleDelay > 0) p.HomeTeleDelay--;
+        if (p.HomeTele > 0 && p.HomeTeleDelay <= 0 && p.NormalHomeTele)
+        {
+            p.HomeTeleport(3221, 3221);
+            p.HomeTele--;
+        }
+        if (p.HomeTele > 0 && p.HomeTeleDelay <= 0 && p.AncientsHomeTele)
+        {
+            p.HomeTeleport(3222, 3219);
+            p.HomeTele--;
+        }
         if (p.YellTimer > 0) p.YellTimer--;
         if (p.SuggestionTimer > 0) p.SuggestionTimer--;
 
@@ -676,7 +708,7 @@ public class GameEngine : BackgroundService
             p.SpecialAmountUpdateReq = false;
         }
 
-        if (p.SkulledUpdateReq)
+        if (p.SkulledUpdateReq && !IsAtDuel(p))
         {
             if (p.SkulledDelay >= 1)
             {
@@ -717,6 +749,9 @@ public class GameEngine : BackgroundService
         p.Hit2UpdateReq = false;
         p.ForceChatUpdateReq = false;
     }
+
+    private static bool IsAtDuel(Player p)
+        => p.AbsX >= 3362 && p.AbsX <= 3391 && p.AbsY >= 3228 && p.AbsY <= 3241;
 
     /// <summary>
     /// Handle NPC death / respawn cycle.

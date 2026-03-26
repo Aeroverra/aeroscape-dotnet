@@ -49,10 +49,12 @@ public class NPCAttackMessageHandler : IMessageHandler<NPCAttackMessage>
         // Set combat target — actual combat logic runs in the tick cycle
         player.AttackNPC = npcIndex;
         player.AttackingNPC = true;
+        npc.FollowPlayer = player.PlayerId;
 
         // Reset any player-vs-player combat
         player.AttackingPlayer = false;
         player.AttackPlayer = 0;
+        player.RequestFaceTo(npcIndex);
 
         _logger.LogDebug("[NPCAttack] Player {Player} targeting NPC {NpcIndex} (type {NpcType})",
             player.Username, npcIndex, npc.NpcType);

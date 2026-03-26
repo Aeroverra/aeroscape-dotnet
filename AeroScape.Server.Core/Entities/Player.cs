@@ -881,6 +881,89 @@ public class Player
         UpdateReq = true;
     }
 
+    public void HomeTeleport(int teleX, int teleY)
+    {
+        if (HomeTele == 15)
+        {
+            RequestAnim(1722, 0);
+        }
+        else if (HomeTele == 14)
+        {
+            RequestAnim(1723, 0);
+            RequestGfx(800, 0);
+        }
+        else if (HomeTele == 13)
+        {
+            RequestAnim(1724, 0);
+            RequestGfx(801, 0);
+        }
+        else if (HomeTele == 12)
+        {
+            RequestAnim(1725, 0);
+            RequestGfx(802, 0);
+        }
+        else if (HomeTele == 11)
+        {
+            RequestAnim(2798, 0);
+            RequestGfx(1703, 0);
+        }
+        else if (HomeTele == 10)
+        {
+            RequestAnim(2799, 0);
+            RequestGfx(1704, 0);
+        }
+        else if (HomeTele == 9)
+        {
+            RequestAnim(2800, 0);
+            RequestGfx(1705, 0);
+        }
+        else if (HomeTele == 8)
+        {
+            RequestAnim(4847, 0);
+            RequestGfx(1706, 0);
+        }
+        else if (HomeTele == 7)
+        {
+            RequestAnim(4848, 0);
+            RequestGfx(1707, 0);
+        }
+        else if (HomeTele == 6)
+        {
+            RequestAnim(4849, 0);
+            RequestGfx(1708, 0);
+        }
+        else if (HomeTele == 5)
+        {
+            RequestAnim(4849, 0);
+            RequestGfx(1709, 0);
+        }
+        else if (HomeTele == 4)
+        {
+            RequestAnim(4849, 0);
+            RequestGfx(1710, 0);
+        }
+        else if (HomeTele == 3)
+        {
+            RequestAnim(4850, 0);
+            RequestGfx(1711, 0);
+        }
+        else if (HomeTele == 2)
+        {
+            RequestAnim(4851, 0);
+            RequestGfx(1712, 0);
+        }
+        else if (HomeTele == 1)
+        {
+            RequestAnim(4852, 0);
+            RequestGfx(1713, 0);
+            SetCoords(teleX, teleY, 0);
+            NormalHomeTele = false;
+            AncientsHomeTele = false;
+            HomeTeleDelay = 3600;
+            HomeTele = 15;
+        }
+    }
+
     /// <summary>
     /// Set the player's absolute coordinates (instant teleport).
     /// </summary>

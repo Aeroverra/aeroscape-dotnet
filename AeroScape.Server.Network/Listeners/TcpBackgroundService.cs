@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using AeroScape.Server.Core.Engine;
+using AeroScape.Server.Core.Items;
 using AeroScape.Server.Core.Services;
 using AeroScape.Server.Core.Session;
 using AeroScape.Server.Core.World;
@@ -27,6 +28,7 @@ public sealed class TcpBackgroundService : BackgroundService
     private readonly IPlayerLoginService _loginService;
     private readonly IPlayerPersistenceService _playerPersistence;
     private readonly MapDataService _mapData;
+    private readonly ItemDefinitionLoader _items;
 
     /// <summary>Game port — classic RS 508 default.</summary>
     private const int DefaultPort = 43594;
@@ -38,7 +40,8 @@ public sealed class TcpBackgroundService : BackgroundService
         GameEngine engine,
         IPlayerLoginService loginService,
         IPlayerPersistenceService playerPersistence,
-        MapDataService mapData)
+        MapDataService mapData,
+        ItemDefinitionLoader items)
     {
         _logger       = logger;
         _sessions     = sessions;
@@ -47,6 +50,7 @@ public sealed class TcpBackgroundService : BackgroundService
         _loginService = loginService;
         _playerPersistence = playerPersistence;
         _mapData      = mapData;
+        _items        = items;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -138,7 +142,11 @@ public sealed class TcpBackgroundService : BackgroundService
             // ═══════════════════════════════════════════════════════════════
             var netStream = session.GetStream();
             await LoginFrames.SendLoginSequenceAsync(
-                netStream, player, loginResult.UsingHD, _mapData, stoppingToken);
+                netStream, player, loginResult.UsingHD, _mapData, _items, stoppingToken);
+
+            player.AppearanceUpdateReq = true;
+            player.UpdateReq = true;
+            player.RunEnergyUpdateReq = true;
 
             // ═══════════════════════════════════════════════════════════════
             // Phase 3: Game packet processing (pipe-based)

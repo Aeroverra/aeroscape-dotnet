@@ -2,6 +2,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using AeroScape.Server.Core.Entities;
+using AeroScape.Server.Core.Items;
 using AeroScape.Server.Core.World;
 
 namespace AeroScape.Server.Network.Frames;
@@ -17,136 +18,33 @@ public static class LoginFrames
     /// This gets the client past the loading screen and into the game world.
     /// </summary>
     public static async Task SendLoginSequenceAsync(
-        Stream stream, Player player, bool usingHD, MapDataService mapData, CancellationToken ct)
+        Stream stream, Player player, bool usingHD, MapDataService mapData, ItemDefinitionLoader items, CancellationToken ct)
     {
         var w = new FrameWriter(8192);
-
-        // ── 1. Window pane (setWindowPane → frame 239) ──────────────────
-        // Welcome screen window pane = 549
-        w.CreateFrame(239);
-        w.WriteWord(549);
-        w.WriteByteA(0);
-
-        // ── 2. Welcome interface (setInterface: show=1, window=549, pos=2, child=378) ──
-        WriteSetInterface(w, 1, 549, 2, 378);
-        // Message panel
-        WriteSetInterface(w, 1, 549, 3, 17);
-
-        // Welcome strings
-        WriteSetString(w, "AeroScape", 378, 115);
-        WriteSetString(w, "", 378, 116);
-        WriteSetString(w, "No unread messages", 378, 37);
-        WriteSetString(w, "0", 378, 39);
-        WriteSetString(w, "", 378, 94);
-        WriteSetString(w, "Welcome to AeroScape", 378, 93);
-        WriteSetString(w, "999", 378, 96);
-
-        await w.FlushToAsync(stream, ct);
-
-        // ── 3. Friend server connection status (frame 115) ──────────────
-        w.CreateFrame(115);
-        w.WriteByte(2);
-
-        // ── 4. Map region ───────────────────────────────────────────────
         WriteMapRegion(w, player, mapData);
-
         await w.FlushToAsync(stream, ct);
-
-        // ── 5. Main game pane + tabs ────────────────────────────────────
-        int mainPane = usingHD ? 746 : 548;
-        w.CreateFrame(239);
-        w.WriteWord(mainPane);
-        w.WriteByteA(0);
-
-        // Set all the tab interfaces
-        if (!usingHD)
-        {
-            WriteSetInterface(w, 1, 548, 6, 745);    // Minimap area
-            WriteSetInterface(w, 1, 548, 11, 751);   // Chat options
-            WriteSetInterface(w, 1, 548, 68, 752);   // Chatbox
-            WriteSetInterface(w, 1, 548, 64, 748);   // HP bar
-            WriteSetInterface(w, 1, 548, 65, 749);   // Prayer bar
-            WriteSetInterface(w, 1, 548, 66, 750);   // Energy bar
-            WriteSetInterface(w, 1, 548, 67, 747);   // Summoning bar
-            WriteSetInterface(w, 1, 548, 8, 137);    // Player name on chat
-            WriteSetInterface(w, 1, 548, 73, 92);    // Attack tab
-            WriteSetInterface(w, 1, 548, 74, 320);   // Skill tab
-            WriteSetInterface(w, 1, 548, 75, 274);   // Quest tab
-            WriteSetInterface(w, 1, 548, 76, 149);   // Inventory tab
-            WriteSetInterface(w, 1, 548, 77, 387);   // Equipment tab
-            WriteSetInterface(w, 1, 548, 78, 271);   // Prayer tab
-            WriteSetInterface(w, 1, 548, 79, 192);   // Magic tab
-            WriteSetInterface(w, 1, 548, 80, 662);   // Summoning tab
-            WriteSetInterface(w, 1, 548, 81, 550);   // Friend tab
-            WriteSetInterface(w, 1, 548, 82, 551);   // Ignore tab
-            WriteSetInterface(w, 1, 548, 83, 589);   // Clan tab
-            WriteSetInterface(w, 1, 548, 84, 261);   // Setting tab
-            WriteSetInterface(w, 1, 548, 85, 464);   // Emote tab
-            WriteSetInterface(w, 1, 548, 86, 187);   // Music tab
-            WriteSetInterface(w, 1, 548, 87, 182);   // Logout tab
-        }
-        else
-        {
-            WriteSetInterface(w, 1, 549, 0, 746);    // Main interface
-            WriteSetInterface(w, 1, 752, 8, 137);    // Player name on chat
-            WriteSetInterface(w, 1, 746, 87, 92);    // Attack tab
-            WriteSetInterface(w, 1, 746, 88, 320);   // Skill tab
-            WriteSetInterface(w, 1, 746, 89, 274);   // Quest tab
-            WriteSetInterface(w, 1, 746, 90, 149);   // Inventory tab
-            WriteSetInterface(w, 1, 746, 91, 387);   // Equipment tab
-            WriteSetInterface(w, 1, 746, 92, 271);   // Prayer tab
-            WriteSetInterface(w, 1, 746, 93, 192);   // Magic tab
-            WriteSetInterface(w, 1, 746, 95, 550);   // Friend tab
-            WriteSetInterface(w, 1, 746, 96, 551);   // Ignore tab
-            WriteSetInterface(w, 1, 746, 97, 589);   // Clan tab
-            WriteSetInterface(w, 1, 746, 98, 261);   // Setting tab
-            WriteSetInterface(w, 1, 746, 99, 464);   // Emote tab
-            WriteSetInterface(w, 1, 746, 65, 752);   // Chatbox
-            WriteSetInterface(w, 1, 746, 18, 751);   // Chat options
-            WriteSetInterface(w, 1, 746, 13, 748);   // HP bar
-            WriteSetInterface(w, 1, 746, 14, 749);   // Prayer bar
-            WriteSetInterface(w, 1, 746, 15, 750);   // Energy bar
-            WriteSetInterface(w, 1, 746, 12, 747);   // Summoning bar
-            WriteSetInterface(w, 1, 746, 100, 187);  // Music tab
-            WriteSetInterface(w, 1, 746, 101, 182);  // Logout tab
-        }
-
-        await w.FlushToAsync(stream, ct);
-
-        // ── 6. Configs ──────────────────────────────────────────────────
+        WriteSetWelcome(w);
+        WriteFriendServerStatus(w);
+        WriteSetInterfaces(w, player, usingHD);
         WriteConfig(w, 1160, -1);
         WriteConfig(w, 173, 0);
         WriteConfig(w, 313, -1);
         WriteConfig(w, 465, -1);
         WriteConfig(w, 802, -1);
         WriteConfig(w, 1085, 249852);
-        WriteConfig(w, 172, player.AutoRetaliate);
-        WriteConfig(w, 43, player.AttackStyle);
-
-        // ── 7. Skills ───────────────────────────────────────────────────
         for (int i = 0; i < Player.SkillCount; i++)
         {
             WriteSkillLevel(w, player, i);
         }
-
-        await w.FlushToAsync(stream, ct);
-
-        // ── 8. Inventory + Equipment ────────────────────────────────────
         WriteItems(w, 149, 0, 93, player.Items, player.ItemsN);
         WriteItems(w, 387, 28, 93, player.Equipment, player.EquipmentN);
-
-        // ── 9. Player options ───────────────────────────────────────────
         WritePlayerOption(w, "null", 1);
         WritePlayerOption(w, "Trade", 2);
         WritePlayerOption(w, "Duel", 3);
-
-        // ── 10. Run energy ──────────────────────────────────────────────
-        w.CreateFrame(99);
-        w.WriteByte(player.RunEnergy);
-
-        // ── 11. Welcome message ─────────────────────────────────────────
-        WriteSendMessage(w, "Welcome to AeroScape.");
-
+        WriteConfig(w, 172, player.AutoRetaliate);
+        WriteConfig(w, 43, player.AttackStyle);
+        WriteFriendServerStatus(w);
+        WriteWeaponTab(w, player, items, usingHD);
         await w.FlushToAsync(stream, ct);
 
         w.Dispose();
@@ -174,6 +72,221 @@ public static class LoginFrames
         w.WriteString(text);
         w.WriteWord(childId);
         w.WriteWord(interfaceId);
+    }
+
+    private static void WriteFriendServerStatus(FrameWriter w)
+    {
+        w.CreateFrame(115);
+        w.WriteByte(2);
+    }
+
+    private static void WriteSetWelcome(FrameWriter w)
+    {
+        w.CreateFrame(239);
+        w.WriteWord(549);
+        w.WriteByteA(0);
+        WriteSetInterface(w, 1, 549, 2, 378);
+        WriteSetInterface(w, 1, 549, 3, 17);
+        WriteSetString(w, "Messages of the Week!", 447, 0);
+        WriteSetString(w, "by: Davidi2", 447, 1);
+        WriteSetString(w, "Official Server for the MoparScape Client!", 447, 2);
+        WriteSetString(w, "No unread messages", 378, 37);
+        WriteSetString(w, "0", 378, 39);
+        WriteSetString(w, "", 378, 94);
+        WriteSetString(w, "You have 0 days of member credit remaining. Please click here to extend your credit", 378, 93);
+        WriteSetString(w, "999", 378, 96);
+        WriteSetString(w, "Welcome to DavidScape", 378, 115);
+        WriteSetString(w, "", 378, 116);
+    }
+
+    private static void WriteSetInterfaces(FrameWriter w, Player p, bool usingHD)
+    {
+        for (int i = 0; i < 137; i++)
+        {
+            WriteSetString(w, "!~_-_~_-_~!", 274, 13 + i);
+        }
+
+        WriteSetString(w, "DavidScape 508", 274, 5);
+        WriteSetString(w, "Quest and Teles:", 274, 6);
+        WriteSetString(w, "Dragon Slayer Quest", 274, 7);
+        WriteSetString(w, "PVP", 274, 8);
+        WriteSetString(w, "GWD", 274, 9);
+        WriteSetString(w, "Home", 274, 10);
+        WriteSetString(w, "Help Desk", 274, 11);
+        WriteSetString(w, "Staff Zone", 274, 12);
+        WriteSetString(w, "Barbarian Assault", 274, 13);
+        WriteSetString(w, "Barrows", 274, 14);
+        WriteSetString(w, "Membership/Donate", 274, 16);
+        WriteSetString(w, "Member Area", 274, 17);
+        WriteSetString(w, "Newest Client", 274, 18);
+
+        p.IsAncients = p.Equipment[3] == 4675 ? 1 : 0;
+
+        if (!usingHD)
+        {
+            WriteSetInterface(w, 1, 548, 6, 745);
+            WriteSetInterface(w, 1, 548, 11, 751);
+            WriteSetInterface(w, 1, 548, 68, 752);
+            WriteSetInterface(w, 1, 548, 64, 748);
+            WriteSetInterface(w, 1, 548, 65, 749);
+            WriteSetInterface(w, 1, 548, 66, 750);
+            WriteSetInterface(w, 1, 548, 67, 747);
+            WriteSetInterface(w, 1, 752, 8, 137);
+            WriteSetInterface(w, 1, 548, 73, 92);
+            WriteSetInterface(w, 1, 548, 74, 320);
+            WriteSetInterface(w, 1, 548, 75, 274);
+            WriteSetInterface(w, 1, 548, 76, 149);
+            WriteSetInterface(w, 1, 548, 77, 387);
+            WriteSetInterface(w, 1, 548, 78, 271);
+            WriteSetInterface(w, 1, 548, 79, p.IsAncients == 1 ? 193 : 192);
+            WriteSetInterface(w, 1, 548, 81, 550);
+            WriteSetInterface(w, 1, 548, 82, 551);
+            WriteSetInterface(w, 1, 548, 83, 589);
+            WriteSetInterface(w, 1, 548, 84, 261);
+            WriteSetInterface(w, 1, 548, 85, 464);
+            WriteSetInterface(w, 1, 548, 86, 187);
+            WriteSetInterface(w, 1, 548, 87, 182);
+        }
+        else
+        {
+            WriteSetInterface(w, 1, 549, 0, 746);
+            WriteSetInterface(w, 1, 752, 8, 137);
+            WriteSetInterface(w, 1, 746, 87, 92);
+            WriteSetInterface(w, 1, 746, 88, 320);
+            WriteSetInterface(w, 1, 746, 89, 274);
+            WriteSetInterface(w, 1, 746, 90, 149);
+            WriteSetInterface(w, 1, 746, 91, 387);
+            WriteSetInterface(w, 1, 746, 92, 271);
+            WriteSetInterface(w, 1, 746, 93, p.IsAncients == 1 ? 193 : 192);
+            WriteSetInterface(w, 1, 746, 95, 550);
+            WriteSetInterface(w, 1, 746, 96, 551);
+            WriteSetInterface(w, 1, 746, 97, 589);
+            WriteSetInterface(w, 1, 746, 98, 261);
+            WriteSetInterface(w, 1, 746, 99, 464);
+            WriteSetInterface(w, 1, 746, 65, 752);
+            WriteSetInterface(w, 1, 746, 18, 751);
+            WriteSetInterface(w, 1, 746, 13, 748);
+            WriteSetInterface(w, 1, 746, 14, 749);
+            WriteSetInterface(w, 1, 746, 15, 750);
+            WriteSetInterface(w, 1, 746, 12, 747);
+            WriteSetInterface(w, 1, 746, 100, 187);
+            WriteSetInterface(w, 1, 746, 101, 182);
+        }
+    }
+
+    private static void WriteWeaponTab(FrameWriter w, Player p, ItemDefinitionLoader items, bool usingHD)
+    {
+        string weapon = items.GetItemName(p.Equipment[3]);
+        int attackTabId = usingHD ? 87 : 73;
+        int childId;
+
+        if (p.Equipment[3] == -1)
+        {
+            childId = 92;
+            if (p.AttackStyle == 3)
+            {
+                p.AttackStyle = 2;
+                WriteConfig(w, 43, 2);
+            }
+        }
+        else if (weapon == "Abyssal whip")
+        {
+            childId = 93;
+            if (p.AttackStyle == 3)
+            {
+                p.AttackStyle = 2;
+                WriteConfig(w, 43, 2);
+            }
+        }
+        else if (weapon is "Granite maul" or "Tzhaar-ket-om" or "Torags hammers")
+        {
+            childId = 76;
+            if (p.AttackStyle == 3)
+            {
+                p.AttackStyle = 2;
+                WriteConfig(w, 43, 2);
+            }
+        }
+        else if (weapon == "Veracs flail" || weapon.EndsWith("mace", StringComparison.Ordinal))
+        {
+            childId = 88;
+        }
+        else if (weapon.EndsWith("crossbow", StringComparison.Ordinal) || weapon.EndsWith(" c'bow", StringComparison.Ordinal))
+        {
+            childId = 79;
+            if (p.AttackStyle == 3)
+            {
+                p.AttackStyle = 2;
+                WriteConfig(w, 43, 2);
+            }
+        }
+        else if (weapon.EndsWith("bow", StringComparison.Ordinal) || weapon.EndsWith("bow full", StringComparison.Ordinal) || weapon == "Seercull")
+        {
+            childId = 77;
+            if (p.AttackStyle == 3)
+            {
+                p.AttackStyle = 2;
+                WriteConfig(w, 43, 2);
+            }
+        }
+        else if (weapon.StartsWith("Staff", StringComparison.Ordinal) || weapon.EndsWith("staff", StringComparison.Ordinal) || weapon == "Toktz-mej-tal")
+        {
+            childId = 90;
+        }
+        else if (weapon.EndsWith("dart", StringComparison.Ordinal) || weapon.EndsWith("knife", StringComparison.Ordinal) || weapon.EndsWith("thrownaxe", StringComparison.Ordinal) || weapon == "Toktz-xil-ul")
+        {
+            childId = 91;
+            if (p.AttackStyle == 3)
+            {
+                p.AttackStyle = 2;
+                WriteConfig(w, 43, 2);
+            }
+        }
+        else if (weapon.EndsWith("dagger", StringComparison.Ordinal) || weapon.EndsWith("dagger(s)", StringComparison.Ordinal) || weapon.EndsWith("dagger(+)", StringComparison.Ordinal) || weapon.EndsWith("dagger(p)", StringComparison.Ordinal))
+        {
+            childId = 89;
+        }
+        else if (weapon.EndsWith("pickaxe", StringComparison.Ordinal))
+        {
+            childId = 83;
+        }
+        else if (weapon.EndsWith("axe", StringComparison.Ordinal) || weapon.EndsWith("battleaxe", StringComparison.Ordinal))
+        {
+            childId = 75;
+        }
+        else if (weapon.EndsWith("halberd", StringComparison.Ordinal))
+        {
+            childId = 84;
+            if (p.AttackStyle == 3)
+            {
+                p.AttackStyle = 2;
+                WriteConfig(w, 43, 2);
+            }
+        }
+        else if (weapon.EndsWith("spear", StringComparison.Ordinal) || weapon == "Guthans warspear")
+        {
+            childId = 85;
+            if (p.AttackStyle == 3)
+            {
+                p.AttackStyle = 2;
+                WriteConfig(w, 43, 2);
+            }
+        }
+        else if (weapon.EndsWith("claws", StringComparison.Ordinal))
+        {
+            childId = 78;
+        }
+        else if (weapon.EndsWith("2h sword", StringComparison.Ordinal) || weapon.EndsWith("godsword", StringComparison.Ordinal) || weapon == "Saradomin sword")
+        {
+            childId = 81;
+        }
+        else
+        {
+            childId = 82;
+        }
+
+        WriteSetInterface(w, 1, usingHD ? 746 : 548, attackTabId, childId);
+        WriteSetString(w, weapon, childId, 0);
     }
 
     /// <summary>Frame 142 (var-size word): setMapRegion with XTEA keys from MapDataService</summary>

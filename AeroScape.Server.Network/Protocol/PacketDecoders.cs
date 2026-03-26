@@ -455,10 +455,9 @@ public sealed class ObjectOption2Decoder : IPacketDecoder
     public object? Decode(PlayerSession session, int opcode, ReadOnlySequence<byte> payload)
     {
         var r = new RsReader(payload);
-        int x = r.ReadUnsignedWordBigEndian();
-        int objId = r.ReadUnsignedWord();
-        int y = r.ReadUnsignedWordBigEndianA();
-        return new ObjectOption2Message(objId, x, y);
+        int firstWord = r.ReadUnsignedWord();
+        int objectId = r.ReadUnsignedWord();
+        return new ObjectOption2Message(objectId, firstWord, 0);
     }
 }
 
@@ -546,10 +545,11 @@ public sealed class ItemOption1Decoder : IPacketDecoder
     public object? Decode(PlayerSession session, int opcode, ReadOnlySequence<byte> payload)
     {
         var r = new RsReader(payload);
-        int packed = r.ReadDWord();
-        int interfaceId = packed >> 16;
-        int slot = r.ReadUnsignedWord();
+        int slot = r.ReadUnsignedWordBigEndianA();
+        int interfaceId = r.ReadUnsignedWord();
+        r.ReadUnsignedWord();
         int itemId = r.ReadUnsignedWord();
+        r.ReadUnsignedWordBigEndian();
         return new ItemOption1Message(slot, interfaceId, itemId);
     }
 }
@@ -576,10 +576,12 @@ public sealed class MagicOnNPCDecoder : IPacketDecoder
     public object? Decode(PlayerSession session, int opcode, ReadOnlySequence<byte> payload)
     {
         var r = new RsReader(payload);
-        // First 2 bytes consumed by PacketManager inline (junk), then:
         int npcIndex = r.ReadSignedWordA();
         int buttonId = r.ReadSignedWordA();
         int interfaceId = r.ReadUnsignedWord();
+        r.ReadSignedWordA();
+        r.ReadSignedWordA();
+        r.ReadUnsignedWord();
         return new MagicOnNPCMessage(npcIndex, buttonId, interfaceId);
     }
 }
@@ -640,9 +642,9 @@ public sealed class ItemOption2Decoder : IPacketDecoder
     public object? Decode(PlayerSession session, int opcode, ReadOnlySequence<byte> payload)
     {
         var r = new RsReader(payload);
-        int packed = r.ReadDWord();
-        int interfaceId = packed >> 16;
-        int slot = r.ReadUnsignedWord();
+        int slot = r.ReadUnsignedWordBigEndianA();
+        int interfaceId = r.ReadUnsignedWord();
+        r.ReadUnsignedWord();
         int itemId = r.ReadUnsignedWord();
         return new ItemOption2Message(slot, interfaceId, itemId);
     }

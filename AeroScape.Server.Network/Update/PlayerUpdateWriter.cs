@@ -361,8 +361,8 @@ public sealed class PlayerUpdateWriter
         {
             str.WriteBits(1, 1);
             str.WriteBits(2, 2);
-            str.WriteBits(3, p.WalkDir);
             str.WriteBits(3, p.RunDir);
+            str.WriteBits(3, p.WalkDir);
             str.WriteBits(1, p.UpdateReq ? 1 : 0);
         }
     }

@@ -7,14 +7,12 @@ namespace AeroScape.Server.Core.Services;
 
 public sealed class DeathService
 {
-    private readonly InventoryService _inventory;
     private readonly PrayerService _prayer;
     private readonly GroundItemManager _groundItems;
     private readonly string _npcDropPath;
 
-    public DeathService(InventoryService inventory, PrayerService prayer, GroundItemManager groundItems)
+    public DeathService(PrayerService prayer, GroundItemManager groundItems)
     {
-        _inventory = inventory;
         _prayer = prayer;
         _groundItems = groundItems;
         _npcDropPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "legacy-java", "server508", "data", "npcs", "npcdrops.cfg");
@@ -26,10 +24,7 @@ public sealed class DeathService
             return;
 
         player.DeathDelay--;
-        if (player.DeathDelay > 0)
-            return;
-
-        RestoreAfterDeath(player);
+        ApplyDead(player);
     }
 
     public void RestoreAfterDeath(Player player)
@@ -45,9 +40,6 @@ public sealed class DeathService
         player.IsDead = false;
         player.AfterDeathUpdateReq = false;
         player.DeathDelay = 7;
-        player.TeleX = 3222;
-        player.TeleY = 3219;
-        player.SetCoords(3222, 3219, 0);
         player.SpecialAmountUpdateReq = true;
         player.RunEnergyUpdateReq = true;
         player.SkulledUpdateReq = true;
@@ -71,11 +63,194 @@ public sealed class DeathService
             npc.NpcCanLoot = true;
             DropNpcLoot(npc);
             npc.HiddenNPC = true;
+        }
+    }
+
+    private void ApplyDead(Player player)
+    {
+        player.LastTickMessage = "Oh dear, you are dead.";
+        if (player.DeathDelay >= 7 && player.FaceToReq != 65535)
+        {
+            player.RequestFaceTo(65535);
+        }
+
+        if (player.follower != null)
+        {
+            player.follower.AttackPlayer = 0;
+            player.follower.AttackingPlayer = false;
+            player.follower.FollowPlayer = player.PlayerId;
+        }
+
+        player.RequestAnim(7197, 0);
+        if (player.DeathDelay < 0)
+            return;
+
+        if (player.PrayerIcon == 3 && player.DeathDelay == 1)
+        {
+            player.RequestGfx(437, 0);
+        }
+
+        var inDuel = IsAtDuel(player);
+        var inClanField = IsAtClanField(player);
+        var inClanLobby = IsAtClanLobby(player);
+        var inPits = IsAtPits(player);
+        var inWilderness = Player.IsWildernessArea(player.AbsX, player.AbsY);
+
+        if (!inDuel && !inClanField && !inClanLobby && !inPits && inWilderness)
+        {
+            if (player.Rights < 2)
+            {
+                DropAllItems(player);
+                player.LastTickMessage = "Your items were dropped!";
+            }
+
+            CleanupFamiliar(player);
+        }
+
+        if (!inDuel && !inClanField && !inClanLobby && !inPits && !inWilderness)
+        {
+            MoveItemsToGravestone(player);
+            CleanupFamiliar(player);
+        }
+
+        if (IsBountyArea(player))
+        {
+            player.BountyOpponent = 0;
+        }
+
+        player.AfterDeathUpdateReq = true;
+        player.FollowingPlayer = false;
+        player.followPlayer = 0;
+        player.Overlay = 0;
+
+        if (IsAtCastleWars(player))
+        {
+            if (player.CWTeam == 0)
+            {
+                player.SetCoords(2427, 3077, 1);
+            }
+            else
+            {
+                player.SetCoords(2372, 3130, 1);
+            }
+
+            if (player.Equipment[3] == 4037 && player.CWTeam == 1)
+            {
+                player.Equipment[3] = -1;
+                player.EquipmentN[3] = 0;
+                player.AppearanceUpdateReq = true;
+                player.UpdateReq = true;
+            }
+
+            if (player.Equipment[3] == 4039 && player.CWTeam == 0)
+            {
+                player.Equipment[3] = -1;
+                player.EquipmentN[3] = 0;
+                player.AppearanceUpdateReq = true;
+                player.UpdateReq = true;
+            }
+
             return;
         }
 
-        if (npc.HiddenNPC && npc.RespawnDelay > 0)
-            npc.RespawnDelay--;
+        if (inPits)
+        {
+            player.GameStarted = false;
+            player.SetCoords(2399, 5172, 0);
+            player.LastTickMessage = "You lost.";
+            return;
+        }
+
+        if (inClanField)
+        {
+            if (player.ClanSide == 1)
+            {
+                player.SetCoords(3320, 3781, player.clanheight);
+            }
+            else
+            {
+                player.SetCoords(3320, 3770, player.clanheight);
+            }
+
+            return;
+        }
+
+        if (player.DuelPartner != 0)
+        {
+            player.SkulledDelay = 0;
+            player.SetCoords(player.DuelX, player.DuelY, 0);
+            player.ResetDuel();
+            return;
+        }
+
+        player.SetCoords(3222, 3219, 0);
+    }
+
+    private void DropAllItems(Player player)
+    {
+        for (var i = 0; i < player.Items.Length; i++)
+        {
+            if (player.Items[i] < 0 || player.ItemsN[i] <= 0)
+                continue;
+
+            _groundItems.CreateGroundItem(player.Items[i], player.ItemsN[i], player.AbsX, player.AbsY, player.HeightLevel, player.Username);
+            player.Items[i] = -1;
+            player.ItemsN[i] = 0;
+        }
+
+        for (var i = 0; i < player.Equipment.Length; i++)
+        {
+            if (player.Equipment[i] < 0 || player.EquipmentN[i] <= 0)
+                continue;
+
+            _groundItems.CreateGroundItem(player.Equipment[i], player.EquipmentN[i], player.AbsX, player.AbsY, player.HeightLevel, player.Username);
+            player.Equipment[i] = -1;
+            player.EquipmentN[i] = 0;
+        }
+
+        player.AppearanceUpdateReq = true;
+        player.UpdateReq = true;
+    }
+
+    private static void MoveItemsToGravestone(Player player)
+    {
+        for (var i = 0; i < player.Items.Length; i++)
+        {
+            if (player.Items[i] < 0 || player.ItemsN[i] <= 0)
+                continue;
+
+            player.Items[i] = -1;
+            player.ItemsN[i] = 0;
+        }
+
+        for (var i = 0; i < player.Equipment.Length; i++)
+        {
+            if (player.Equipment[i] < 0 || player.EquipmentN[i] <= 0)
+                continue;
+
+            player.Equipment[i] = -1;
+            player.EquipmentN[i] = 0;
+        }
+
+        player.gsX = player.AbsX;
+        player.gsY = player.AbsY;
+        player.gsH = player.HeightLevel;
+        player.graveStone = true;
+        player.graveStoneTimer = 200;
+        player.AppearanceUpdateReq = true;
+        player.UpdateReq = true;
+    }
+
+    private static void CleanupFamiliar(Player player)
+    {
+        if (player.follower != null)
+        {
+            player.follower.IsDead = true;
+        }
+
+        player.FamiliarType = 0;
+        player.FamiliarId = 0;
+        player.follower = null;
     }
 
     private void DropNpcLoot(NPC npc)
@@ -135,4 +310,22 @@ public sealed class DeathService
             break;
         }
     }
+
+    private static bool IsAtDuel(Player player)
+        => player.AbsX >= 3362 && player.AbsX <= 3391 && player.AbsY >= 3228 && player.AbsY <= 3241;
+
+    private static bool IsAtPits(Player player)
+        => player.AbsX >= 2370 && player.AbsX <= 2426 && player.AbsY >= 5128 && player.AbsY <= 5167;
+
+    private static bool IsAtClanLobby(Player player)
+        => player.AbsX >= 3264 && player.AbsX <= 3279 && player.AbsY >= 3672 && player.AbsY <= 3695;
+
+    private static bool IsAtClanField(Player player)
+        => player.AbsX >= 3263 && player.AbsX <= 3329 && player.AbsY >= 3713 && player.AbsY <= 3841;
+
+    private static bool IsAtCastleWars(Player player)
+        => player.AbsX >= 2363 && player.AbsX <= 2432 && player.AbsY >= 3071 && player.AbsY <= 3135;
+
+    private static bool IsBountyArea(Player player)
+        => player.AbsX >= 3085 && player.AbsX <= 3185 && player.AbsY >= 3662 && player.AbsY <= 3765;
 }
