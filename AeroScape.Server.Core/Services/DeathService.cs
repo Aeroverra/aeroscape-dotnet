@@ -1,7 +1,9 @@
 using System;
 using System.IO;
 using AeroScape.Server.Core.Entities;
+using AeroScape.Server.Core.Engine;
 using AeroScape.Server.Core.Items;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AeroScape.Server.Core.Services;
 
@@ -9,12 +11,14 @@ public sealed class DeathService
 {
     private readonly PrayerService _prayer;
     private readonly GroundItemManager _groundItems;
+    private readonly IServiceProvider _serviceProvider;
     private readonly string _npcDropPath;
 
-    public DeathService(PrayerService prayer, GroundItemManager groundItems)
+    public DeathService(PrayerService prayer, GroundItemManager groundItems, IServiceProvider serviceProvider)
     {
         _prayer = prayer;
         _groundItems = groundItems;
+        _serviceProvider = serviceProvider;
         _npcDropPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "legacy-java", "server508", "data", "npcs", "npcdrops.cfg");
     }
 
@@ -87,7 +91,20 @@ public sealed class DeathService
 
         if (player.PrayerIcon == 3 && player.DeathDelay == 1)
         {
-            player.RequestGfx(437, 0);
+            foreach (var other in GetEngine().Players)
+            {
+                if (other == null || other.PlayerId == player.PlayerId)
+                {
+                    continue;
+                }
+
+                if (other.AbsX >= player.AbsX - 5 && other.AbsX <= player.AbsX + 5 &&
+                    other.AbsY >= player.AbsY - 5 && other.AbsY <= player.AbsY + 5)
+                {
+                    other.RequestGfx(437, 0);
+                    other.AppendHit(10 + Random.Shared.Next(16), 0);
+                }
+            }
         }
 
         var inDuel = IsAtDuel(player);
@@ -188,12 +205,14 @@ public sealed class DeathService
 
     private void DropAllItems(Player player)
     {
+        _groundItems.CreateGroundItem(526, 1, player.AbsX, player.AbsY, player.HeightLevel, string.Empty);
+
         for (var i = 0; i < player.Items.Length; i++)
         {
             if (player.Items[i] < 0 || player.ItemsN[i] <= 0)
                 continue;
 
-            _groundItems.CreateGroundItem(player.Items[i], player.ItemsN[i], player.AbsX, player.AbsY, player.HeightLevel, player.Username);
+            _groundItems.CreateGroundItem(player.Items[i], player.ItemsN[i], player.AbsX, player.AbsY, player.HeightLevel, string.Empty);
             player.Items[i] = -1;
             player.ItemsN[i] = 0;
         }
@@ -203,7 +222,7 @@ public sealed class DeathService
             if (player.Equipment[i] < 0 || player.EquipmentN[i] <= 0)
                 continue;
 
-            _groundItems.CreateGroundItem(player.Equipment[i], player.EquipmentN[i], player.AbsX, player.AbsY, player.HeightLevel, player.Username);
+            _groundItems.CreateGroundItem(player.Equipment[i], player.EquipmentN[i], player.AbsX, player.AbsY, player.HeightLevel, string.Empty);
             player.Equipment[i] = -1;
             player.EquipmentN[i] = 0;
         }
@@ -212,13 +231,20 @@ public sealed class DeathService
         player.UpdateReq = true;
     }
 
-    private static void MoveItemsToGravestone(Player player)
+    private void MoveItemsToGravestone(Player player)
     {
+        player.gsItems.Clear();
+        player.gsItemsN.Clear();
+        player.gsEquip.Clear();
+        player.gsEquipN.Clear();
+
         for (var i = 0; i < player.Items.Length; i++)
         {
             if (player.Items[i] < 0 || player.ItemsN[i] <= 0)
                 continue;
 
+            player.gsItems.Add(player.Items[i]);
+            player.gsItemsN.Add(player.ItemsN[i]);
             player.Items[i] = -1;
             player.ItemsN[i] = 0;
         }
@@ -228,6 +254,8 @@ public sealed class DeathService
             if (player.Equipment[i] < 0 || player.EquipmentN[i] <= 0)
                 continue;
 
+            player.gsEquip.Add(player.Equipment[i]);
+            player.gsEquipN.Add(player.EquipmentN[i]);
             player.Equipment[i] = -1;
             player.EquipmentN[i] = 0;
         }
@@ -237,9 +265,16 @@ public sealed class DeathService
         player.gsH = player.HeightLevel;
         player.graveStone = true;
         player.graveStoneTimer = 200;
+        var engine = GetEngine();
+        if (!engine.LoadedObjects.Exists(o => o.ObjectId == 12719 && o.X == player.gsX && o.Y == player.gsY))
+        {
+            engine.LoadedObjects.Add(new LoadedObject(12719, player.gsX, player.gsY, 0, 10));
+        }
         player.AppearanceUpdateReq = true;
         player.UpdateReq = true;
     }
+
+    private GameEngine GetEngine() => _serviceProvider.GetRequiredService<GameEngine>();
 
     private static void CleanupFamiliar(Player player)
     {

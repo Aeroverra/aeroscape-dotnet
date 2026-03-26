@@ -1,6 +1,7 @@
 using System;
 using AeroScape.Server.Core.Entities;
 using AeroScape.Server.Core.Engine;
+using AeroScape.Server.Core.Items;
 using Microsoft.Extensions.Logging;
 
 namespace AeroScape.Server.Core.Combat;
@@ -14,11 +15,13 @@ public class PlayerVsNpcCombat
 {
     private readonly GameEngine _engine;
     private readonly ILogger<PlayerVsNpcCombat> _logger;
+    private readonly PlayerItemsService _playerItems;
 
-    public PlayerVsNpcCombat(GameEngine engine, ILogger<PlayerVsNpcCombat> logger)
+    public PlayerVsNpcCombat(GameEngine engine, ILogger<PlayerVsNpcCombat> logger, PlayerItemsService playerItems)
     {
         _engine = engine;
         _logger = logger;
+        _playerItems = playerItems;
     }
 
     /// <summary>
@@ -350,8 +353,10 @@ public class PlayerVsNpcCombat
         // ── Dragon Slayer quest ────────────────────────────────────────────
         if (npcType == 742 && attacker.DragonSlayer == 3)
         {
+            attacker.HeadTimer = 8;
             attacker.DragonSlayer = 4;
-            // Item giving requires item system — flagged for when that's implemented.
+            _playerItems.AddItem(attacker, 11279, 1);
+            attacker.LastTickMessage = "You slayed Elvarg and took his head!";
         }
     }
 

@@ -96,7 +96,24 @@ public sealed class PlayerBankService(ItemDefinitionLoader itemDefinitions, Play
             player.LastTickMessage = "You can't carry more of that item!";
         }
 
-        if (!itemDefinitions.IsStackable(withdrawItemId))
+        if (itemDefinitions.IsStackable(itemId))
+        {
+            if (!playerItems.AddItem(player, itemId, amount))
+            {
+                player.LastTickMessage = "Not enough space in your inventory.";
+                return;
+            }
+        }
+        else if (player.WithdrawNote && itemDefinitions.CanBeNoted(itemId))
+        {
+            withdrawItemId = itemDefinitions.FindNote(itemId);
+            if (!playerItems.AddItem(player, withdrawItemId, amount))
+            {
+                player.LastTickMessage = "Not enough space in your inventory.";
+                return;
+            }
+        }
+        else
         {
             var remaining = amount;
             while (remaining > 0 && playerItems.AddItem(player, withdrawItemId, 1))
@@ -110,20 +127,6 @@ public sealed class PlayerBankService(ItemDefinitionLoader itemDefinitions, Play
                 player.LastTickMessage = "Not enough space in your inventory.";
             }
         }
-        else
-        {
-            if (player.WithdrawNote && itemDefinitions.CanBeNoted(itemId))
-            {
-                withdrawItemId = itemDefinitions.FindNote(itemId);
-            }
-
-            if (!playerItems.AddItem(player, withdrawItemId, amount))
-            {
-                player.LastTickMessage = "Not enough space in your inventory.";
-                return;
-            }
-        }
-
         player.BankItemsN[bankSlot] -= amount;
         if (player.BankItemsN[bankSlot] <= 0)
         {

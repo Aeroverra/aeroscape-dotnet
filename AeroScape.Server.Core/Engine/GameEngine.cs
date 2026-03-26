@@ -93,7 +93,8 @@ public class GameEngine : BackgroundService
         LegacyFileManager fileManager,
         NpcSpawnLoader npcSpawnLoader,
         ObjectLoaderService objectLoader,
-        GroundItemManager groundItems)
+        GroundItemManager groundItems,
+        PlayerItemsService playerItems)
     {
         _logger = logger;
         _walkQueue = walkQueue;
@@ -105,7 +106,7 @@ public class GameEngine : BackgroundService
         _objectLoader = objectLoader;
         _groundItems = groundItems;
         PlayerCombat = new PlayerVsPlayerCombat(this, pvpLogger);
-        PlayerNpcCombat = new PlayerVsNpcCombat(this, pveLogger);
+        PlayerNpcCombat = new PlayerVsNpcCombat(this, pveLogger, playerItems);
         NpcPlayerCombat = new NpcVsPlayerCombat(this, npcLogger);
     }
 

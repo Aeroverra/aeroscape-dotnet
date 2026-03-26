@@ -417,6 +417,10 @@ public class Player
     public bool graveStone { get; set; }
     public int gsH { get; set; }
     public int gsX { get; set; }
+    public List<int> gsItems { get; set; } = [];
+    public List<int> gsItemsN { get; set; } = [];
+    public List<int> gsEquip { get; set; } = [];
+    public List<int> gsEquipN { get; set; } = [];
     public NPC? follower { get; set; }
     public int gsY { get; set; }
     public int constInterface { get; set; }

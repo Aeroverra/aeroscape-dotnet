@@ -4,12 +4,20 @@ namespace AeroScape.Server.Core.Items;
 
 public sealed class PlayerItemsService(ItemDefinitionLoader items)
 {
+    private bool IsInventoryStackType(int itemId) => items.IsStackable(itemId) || items.IsNoted(itemId);
+
     public bool HasItemAmount(Player player, int itemId, int amount) => InvItemCount(player, itemId) >= amount;
 
     public bool HaveItem(Player player, int itemId, int amount = 1) => HoldItem(player, itemId, amount);
 
     public bool HoldItem(Player player, int itemId, int amount)
     {
+        if (IsInventoryStackType(itemId))
+        {
+            var slot = GetItemSlot(player, itemId);
+            return slot >= 0 && player.ItemsN[slot] >= amount;
+        }
+
         var found = 0;
         for (var i = 0; i < player.Items.Length; i++)
         {
@@ -36,7 +44,7 @@ public sealed class PlayerItemsService(ItemDefinitionLoader items)
             return false;
         }
 
-        if (!items.IsStackable(itemId))
+        if (!IsInventoryStackType(itemId))
         {
             while (itemAmount > 0)
             {
@@ -90,7 +98,7 @@ public sealed class PlayerItemsService(ItemDefinitionLoader items)
             }
         }
 
-        if (!items.IsStackable(itemId))
+        if (!IsInventoryStackType(itemId))
         {
             for (var i = 0; i < player.Items.Length && amount > 0; i++)
             {
@@ -168,7 +176,7 @@ public sealed class PlayerItemsService(ItemDefinitionLoader items)
                 continue;
             }
 
-            amount += items.IsStackable(itemId) ? player.ItemsN[i] : 1;
+            amount += IsInventoryStackType(itemId) ? player.ItemsN[i] : 1;
         }
 
         return amount;

@@ -22,11 +22,6 @@ public sealed class WalkQueue
         player.AutoCasting = false;
         player.IsRunning = message.IsRunning;
 
-        if (player.FreezeDelay > 0)
-        {
-            return;
-        }
-
         int firstX = message.FirstX - (player.MapRegionX - 6) * 8;
         int firstY = message.FirstY - (player.MapRegionY - 6) * 8;
 
@@ -39,6 +34,11 @@ public sealed class WalkQueue
         if (player.FaceToReq != 65535)
         {
             player.RequestFaceTo(65535);
+        }
+
+        if (player.FreezeDelay > 0)
+        {
+            player.LastTickMessage = "You cant move! Your frozen!";
         }
     }
 
@@ -76,6 +76,11 @@ public sealed class WalkQueue
             player.TeleportToX = -1;
             player.TeleportToY = -1;
             player.DidTeleport = true;
+            return;
+        }
+
+        if (player.FreezeDelay > 0)
+        {
             return;
         }
 
