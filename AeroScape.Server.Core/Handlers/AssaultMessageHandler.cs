@@ -1,6 +1,6 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using AeroScape.Server.Core.Messages;
 using AeroScape.Server.Core.Session;
 
@@ -12,6 +12,12 @@ namespace AeroScape.Server.Core.Handlers;
 /// </summary>
 public class AssaultMessageHandler : IMessageHandler<AssaultMessage>
 {
+    private readonly ILogger<AssaultMessageHandler> _logger;
+
+    public AssaultMessageHandler(ILogger<AssaultMessageHandler> logger)
+    {
+        _logger = logger;
+    }
     // NPC IDs per wave (indices 0-4 = waves 1-5)
     private static readonly int[] HealerIds  = { 5238, 5239, 5240, 5241, 5242 };
     private static readonly int[] RangerIds  = { 5229, 5230, 5231, 5232, 5233 };
@@ -43,7 +49,7 @@ public class AssaultMessageHandler : IMessageHandler<AssaultMessage>
     public Task HandleAsync(PlayerSession session, AssaultMessage message, CancellationToken cancellationToken)
     {
         // TODO: Integrate with world engine, NPC spawning, player state, and coordinate systems.
-        Console.WriteLine($"[Assault] Player {session.SessionId} action={message.Action} wave={message.Wave}");
+        _logger.LogInformation("[Assault] Player {SessionId} action={Action} wave={Wave}", session.SessionId, message.Action, message.Wave);
 
         switch (message.Action)
         {
@@ -57,28 +63,28 @@ public class AssaultMessageHandler : IMessageHandler<AssaultMessage>
 
             case AssaultAction.EndGame:
                 // TODO: Teleport all players back to lobby, clear game state.
-                Console.WriteLine("[Assault] Game ended.");
+                _logger.LogInformation("[Assault] Game ended.");
                 break;
 
             case AssaultAction.PlayerDied:
                 // TODO: Teleport all assault players out, send "Oh no! Someone died!" message.
-                Console.WriteLine("[Assault] A player died — ending game.");
+                _logger.LogInformation("[Assault] A player died — ending game.");
                 break;
 
             case AssaultAction.NpcDied:
                 // TODO: Track kill counts per type, check wave completion.
-                Console.WriteLine("[Assault] NPC killed in wave.");
+                _logger.LogInformation("[Assault] NPC killed in wave.");
                 break;
         }
 
         return Task.CompletedTask;
     }
 
-    private static void HandleGoIn(PlayerSession session, int wave)
+    private void HandleGoIn(PlayerSession session, int wave)
     {
         if (wave < 1 || wave > 5)
         {
-            Console.WriteLine($"[Assault] Invalid wave {wave}");
+            _logger.LogInformation("[Assault] Invalid wave {Wave}", wave);
             return;
         }
 
@@ -86,10 +92,10 @@ public class AssaultMessageHandler : IMessageHandler<AssaultMessage>
         // TODO: Toggle waiting state — first call enters waiting room, second call leaves.
         // TODO: If >= MinPlayersToStart waiting and no game in progress, teleport all to arena and start wave.
         var (wx, wy) = WaitingRoomCoords[wave - 1];
-        Console.WriteLine($"[Assault] Player entering waiting room for wave {wave} at ({wx}, {wy})");
+        _logger.LogInformation("[Assault] Player entering waiting room for wave {Wave} at ({X}, {Y})", wave, wx, wy);
     }
 
-    private static void HandleStartWave(int wave)
+    private void HandleStartWave(int wave)
     {
         if (wave < 1 || wave > 5) return;
 
@@ -101,7 +107,7 @@ public class AssaultMessageHandler : IMessageHandler<AssaultMessage>
         // TODO: Spawn NPCs using world NPC system:
         //   count × HealerIds[idx], RangerIds[idx], FighterIds[idx], RunnerIds[idx]
         //   each with maxHP=hp, maxHit=mh, positioned randomly in arena bounds.
-        Console.WriteLine($"[Assault] Starting wave {wave}: {count} of each type, HP={hp}, MaxHit={mh}");
-        Console.WriteLine($"[Assault] Healers={HealerIds[idx]}, Rangers={RangerIds[idx]}, Fighters={FighterIds[idx]}, Runners={RunnerIds[idx]}");
+        _logger.LogInformation("[Assault] Starting wave {Wave}: {Count} of each type, HP={Hp}, MaxHit={MaxHit}", wave, count, hp, mh);
+        _logger.LogInformation("[Assault] Healers={Healers}, Rangers={Rangers}, Fighters={Fighters}, Runners={Runners}", HealerIds[idx], RangerIds[idx], FighterIds[idx], RunnerIds[idx]);
     }
 }

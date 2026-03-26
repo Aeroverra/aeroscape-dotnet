@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using AeroScape.Server.Core.Messages;
 using AeroScape.Server.Core.Session;
 
@@ -8,6 +9,12 @@ namespace AeroScape.Server.Core.Handlers;
 
 public class PrayerMessageHandler : IMessageHandler<PrayerMessage>
 {
+    private readonly ILogger<PrayerMessageHandler> _logger;
+
+    public PrayerMessageHandler(ILogger<PrayerMessageHandler> logger)
+    {
+        _logger = logger;
+    }
     private static readonly int[] PrayerConfig =
     {
         83, 84, 85, 862, 863, 86, 87, 88, 89, 90, 91, 864, 865, 92, 93, 94, 95,
@@ -65,16 +72,16 @@ public class PrayerMessageHandler : IMessageHandler<PrayerMessage>
         // TODO: Integrate with player skill levels, prayer state, config frames, and head icons.
         // The legacy logic iterates button ids from 5..58 step 2 to map to prayer index 0..26.
         // Each prayer toggle deactivates conflicting prayers, adjusts drain rate, and updates head icons.
-        Console.WriteLine($"[Prayer] Player {session.SessionId} pressed prayer button {message.ButtonId}");
+        _logger.LogInformation("[Prayer] Player {SessionId} pressed prayer button {ButtonId}", session.SessionId, message.ButtonId);
 
         int prayerIndex = (message.ButtonId - 5) / 2;
         if (prayerIndex < 0 || prayerIndex >= PrayerConfig.Length)
         {
-            Console.WriteLine($"[Prayer] Invalid prayer index {prayerIndex} for button {message.ButtonId}");
+            _logger.LogWarning("[Prayer] Invalid prayer index {PrayerIndex} for button {ButtonId}", prayerIndex, message.ButtonId);
             return Task.CompletedTask;
         }
 
-        Console.WriteLine($"[Prayer] Prayer index={prayerIndex}, requiredLevel={PrayerLevel[prayerIndex]}, configId={PrayerConfig[prayerIndex]}, drainRate={DrainRate[prayerIndex]}");
+        _logger.LogInformation("[Prayer] Prayer index={PrayerIndex}, requiredLevel={RequiredLevel}, configId={ConfigId}, drainRate={DrainRate}", prayerIndex, PrayerLevel[prayerIndex], PrayerConfig[prayerIndex], DrainRate[prayerIndex]);
 
         // TODO: Check player prayer skill level >= PrayerLevel[prayerIndex]
         // TODO: Call SwitchConflictingPrayers using ConflictingPrayers[prayerIndex]

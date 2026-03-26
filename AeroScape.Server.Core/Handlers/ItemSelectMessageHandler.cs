@@ -1,6 +1,6 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using AeroScape.Server.Core.Messages;
 using AeroScape.Server.Core.Session;
 
@@ -8,6 +8,12 @@ namespace AeroScape.Server.Core.Handlers;
 
 public class ItemSelectMessageHandler : IMessageHandler<ItemSelectMessage>
 {
+    private readonly ILogger<ItemSelectMessageHandler> _logger;
+
+    public ItemSelectMessageHandler(ILogger<ItemSelectMessageHandler> logger)
+    {
+        _logger = logger;
+    }
     public Task HandleAsync(PlayerSession session, ItemSelectMessage message, CancellationToken cancellationToken)
     {
         // TODO: Implement item select logic
@@ -21,7 +27,7 @@ public class ItemSelectMessageHandler : IMessageHandler<ItemSelectMessage>
         //       * Imp jar looting (11238, 11240, 11252, 11254, 11256) → random reward
         //       * Herb cleaning (199 → 249, 207 → 257) → herblore XP
         //       * Cannon setup (6), slayer gem (4155), summoning (4447), etc.
-        Console.WriteLine($"[ItemSelect] Player {session.SessionId} selected item {message.ItemId} at slot {message.ItemSlot} on interface {message.InterfaceId}");
+        _logger.LogInformation("[ItemSelect] Player {SessionId} selected item {ItemId} at slot {ItemSlot} on interface {InterfaceId}", session.SessionId, message.ItemId, message.ItemSlot, message.InterfaceId);
         return Task.CompletedTask;
     }
 }

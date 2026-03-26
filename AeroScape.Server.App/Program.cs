@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Serilog;
 using AeroScape.Server.App.Services;
 using AeroScape.Server.Core.Engine;
 using AeroScape.Server.Core.Handlers;
@@ -14,8 +15,11 @@ using AeroScape.Server.Network.Protocol;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-// Logging
-builder.Logging.SetMinimumLevel(LogLevel.Information);
+// Logging — Serilog replaces the default logger; ILogger<T> injection continues to work.
+builder.Logging.ClearProviders();
+builder.Services.AddSerilog(config => config
+    .MinimumLevel.Information()
+    .WriteTo.Console());
 
 // ── Data / EF Core ──────────────────────────────────────────────────────────
 var dbProvider = builder.Configuration["DatabaseProvider"] ?? "SqlServer";

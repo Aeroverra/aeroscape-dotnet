@@ -1,6 +1,6 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using AeroScape.Server.Core.Messages;
 using AeroScape.Server.Core.Session;
 
@@ -8,6 +8,12 @@ namespace AeroScape.Server.Core.Handlers;
 
 public class NPCOption2MessageHandler : IMessageHandler<NPCOption2Message>
 {
+    private readonly ILogger<NPCOption2MessageHandler> _logger;
+
+    public NPCOption2MessageHandler(ILogger<NPCOption2MessageHandler> logger)
+    {
+        _logger = logger;
+    }
     public Task HandleAsync(PlayerSession session, NPCOption2Message message, CancellationToken cancellationToken)
     {
         // TODO: Implement NPC Option 2 logic (secondary NPC interaction).
@@ -21,7 +27,7 @@ public class NPCOption2MessageHandler : IMessageHandler<NPCOption2Message>
         //   - Fishing (316 trout, 312 shark, 313 manta)
         //   - Thieving (20 paladin, 21 hero, 1/9 man, 2234 farmer)
         //   - Banking (2270, 2619, 494, 495)
-        Console.WriteLine($"[NPCOption2] Player {session.SessionId} used option-2 on NPC index {message.NpcIndex}");
+        _logger.LogInformation("[NPCOption2] Player {SessionId} used option-2 on NPC index {NpcIndex}", session.SessionId, message.NpcIndex);
         return Task.CompletedTask;
     }
 }
