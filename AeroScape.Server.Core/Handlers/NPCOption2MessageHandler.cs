@@ -1,7 +1,9 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using AeroScape.Server.Core.Engine;
 using AeroScape.Server.Core.Messages;
+using AeroScape.Server.Core.Services;
 using AeroScape.Server.Core.Session;
 
 namespace AeroScape.Server.Core.Handlers;
@@ -9,25 +11,52 @@ namespace AeroScape.Server.Core.Handlers;
 public class NPCOption2MessageHandler : IMessageHandler<NPCOption2Message>
 {
     private readonly ILogger<NPCOption2MessageHandler> _logger;
+    private readonly GameEngine _engine;
+    private readonly ShopService _shops;
 
-    public NPCOption2MessageHandler(ILogger<NPCOption2MessageHandler> logger)
+    public NPCOption2MessageHandler(ILogger<NPCOption2MessageHandler> logger, GameEngine engine, ShopService shops)
     {
         _logger = logger;
+        _engine = engine;
+        _shops = shops;
     }
+
     public Task HandleAsync(PlayerSession session, NPCOption2Message message, CancellationToken cancellationToken)
     {
-        // TODO: Implement NPC Option 2 logic (secondary NPC interaction).
-        // Legacy behaviour: validate NPC index, distance check, face NPC, reset skilling,
-        // then switch on NPC type for:
-        //   - Dragon dialogues (6901, 6903, 6905, 6907)
-        //   - Minigame rewards (5029)
-        //   - Shops (6970, 549, 548, 521, 682)
-        //   - Makeover (598 – gender-dependent interface)
-        //   - Ranged tutor items (1861)
-        //   - Fishing (316 trout, 312 shark, 313 manta)
-        //   - Thieving (20 paladin, 21 hero, 1/9 man, 2234 farmer)
-        //   - Banking (2270, 2619, 494, 495)
-        _logger.LogInformation("[NPCOption2] Player {SessionId} used option-2 on NPC index {NpcIndex}", session.SessionId, message.NpcIndex);
+        var player = session.Entity;
+        if (player is null || message.NpcIndex <= 0 || message.NpcIndex >= _engine.Npcs.Length)
+            return Task.CompletedTask;
+
+        var npc = _engine.Npcs[message.NpcIndex];
+        if (npc is null)
+            return Task.CompletedTask;
+
+        switch (npc.NpcType)
+        {
+            case 6970:
+                _shops.OpenShop(player, 11);
+                break;
+            case 549:
+                _shops.OpenShop(player, 13);
+                break;
+            case 548:
+                _shops.OpenShop(player, 14);
+                break;
+            case 521:
+                _shops.OpenShop(player, 5);
+                break;
+            case 682:
+                _shops.OpenShop(player, 3);
+                break;
+            case 494:
+            case 495:
+            case 2619:
+            case 2270:
+                player.InterfaceId = 762;
+                break;
+        }
+
+        _logger.LogInformation("[NPCOption2] Player {Username} npcType={NpcType}", player.Username, npc.NpcType);
         return Task.CompletedTask;
     }
 }
