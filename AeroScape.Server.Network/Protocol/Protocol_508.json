@@ -2,261 +2,1285 @@
   "revision": 508,
   "description": "RuneScape 508 protocol packet definitions",
   "packets": [
-    { "opcode": 0, "size": -3, "name": "Unknown0" },
-    { "opcode": 1, "size": -3, "name": "Unknown1" },
-    { "opcode": 2, "size": 8, "name": "RemoveIgnore" },
-    { "opcode": 3, "size": 8, "name": "EquipItem" },
-    { "opcode": 4, "size": -3, "name": "Unknown4" },
-    { "opcode": 5, "size": -3, "name": "Unknown5" },
-    { "opcode": 6, "size": -3, "name": "Unknown6" },
-    { "opcode": 7, "size": 2, "name": "NpcOption1" },
-    { "opcode": 8, "size": -3, "name": "Unknown8" },
-    { "opcode": 9, "size": -3, "name": "Unknown9" },
-    { "opcode": 10, "size": -3, "name": "Unknown10" },
-    { "opcode": 11, "size": -3, "name": "Unknown11" },
-    { "opcode": 12, "size": -3, "name": "Unknown12" },
-    { "opcode": 13, "size": -3, "name": "Unknown13" },
-    { "opcode": 14, "size": -3, "name": "Unknown14" },
-    { "opcode": 15, "size": -3, "name": "Unknown15" },
-    { "opcode": 16, "size": -3, "name": "Unknown16" },
-    { "opcode": 17, "size": -3, "name": "Unknown17" },
-    { "opcode": 18, "size": -3, "name": "Unknown18" },
-    { "opcode": 19, "size": -3, "name": "Unknown19" },
-    { "opcode": 20, "size": -3, "name": "Unknown20" },
-    { "opcode": 21, "size": 6, "name": "ActionButton" },
-    { "opcode": 22, "size": 4, "name": "UpdateAck" },
-    { "opcode": 23, "size": -3, "name": "Unknown23" },
-    { "opcode": 24, "size": -3, "name": "MagicOnNpc" },
-    { "opcode": 25, "size": -3, "name": "Unknown25" },
-    { "opcode": 26, "size": -3, "name": "Unknown26" },
-    { "opcode": 27, "size": -3, "name": "Unknown27" },
-    { "opcode": 28, "size": -3, "name": "Unknown28" },
-    { "opcode": 29, "size": -3, "name": "Unknown29" },
-    { "opcode": 30, "size": 8, "name": "AddFriend" },
-    { "opcode": 31, "size": -3, "name": "Unknown31" },
-    { "opcode": 32, "size": -3, "name": "Unknown32" },
-    { "opcode": 33, "size": -3, "name": "Unknown33" },
-    { "opcode": 34, "size": -3, "name": "Unknown34" },
-    { "opcode": 35, "size": -3, "name": "Unknown35" },
-    { "opcode": 36, "size": -3, "name": "Unknown36" },
-    { "opcode": 37, "size": 2, "name": "PlayerOption2" },
-    { "opcode": 38, "size": 2, "name": "ItemExamine" },
-    { "opcode": 39, "size": -3, "name": "Unknown39" },
-    { "opcode": 40, "size": -3, "name": "ItemOnItem" },
-    { "opcode": 41, "size": -3, "name": "Unknown41" },
-    { "opcode": 42, "size": -3, "name": "ClanJoin" },
-    { "opcode": 43, "size": -3, "name": "UserInput" },
-    { "opcode": 44, "size": -3, "name": "Unknown44" },
-    { "opcode": 45, "size": -3, "name": "Unknown45" },
-    { "opcode": 46, "size": -3, "name": "Unknown46" },
-    { "opcode": 47, "size": 0, "name": "Idle" },
-    { "opcode": 48, "size": -3, "name": "Unknown48" },
-    { "opcode": 49, "size": -1, "name": "WalkMain" },
-    { "opcode": 50, "size": -3, "name": "Unknown50" },
-    { "opcode": 51, "size": -3, "name": "Unknown51" },
-    { "opcode": 52, "size": 2, "name": "NpcOption2" },
-    { "opcode": 53, "size": -3, "name": "Unknown53" },
-    { "opcode": 54, "size": -3, "name": "Unknown54" },
-    { "opcode": 55, "size": -3, "name": "Unknown55" },
-    { "opcode": 56, "size": -3, "name": "Unknown56" },
-    { "opcode": 57, "size": -3, "name": "Unknown57" },
-    { "opcode": 58, "size": -3, "name": "Unknown58" },
-    { "opcode": 59, "size": 6, "name": "MouseClick" },
-    { "opcode": 60, "size": 0, "name": "MapRegionLoaded" },
-    { "opcode": 61, "size": 8, "name": "AddIgnore" },
-    { "opcode": 62, "size": -3, "name": "SpawnObjects" },
-    { "opcode": 63, "size": -3, "name": "DialogueContinue" },
-    { "opcode": 64, "size": -3, "name": "Unknown64" },
-    { "opcode": 65, "size": -3, "name": "Unknown65" },
-    { "opcode": 66, "size": -3, "name": "Unknown66" },
-    { "opcode": 67, "size": -3, "name": "Unknown67" },
-    { "opcode": 68, "size": -3, "name": "Unknown68" },
-    { "opcode": 69, "size": -3, "name": "Unknown69" },
-    { "opcode": 70, "size": 8, "name": "MagicOnPlayer" },
-    { "opcode": 71, "size": -3, "name": "Unknown71" },
-    { "opcode": 72, "size": -3, "name": "Unknown72" },
-    { "opcode": 73, "size": -3, "name": "Unknown73" },
-    { "opcode": 74, "size": -3, "name": "Unknown74" },
-    { "opcode": 75, "size": -3, "name": "Unknown75" },
-    { "opcode": 76, "size": -3, "name": "Unknown76" },
-    { "opcode": 77, "size": -3, "name": "Unknown77" },
-    { "opcode": 78, "size": -3, "name": "Unknown78" },
-    { "opcode": 79, "size": -3, "name": "Unknown79" },
-    { "opcode": 80, "size": -3, "name": "Unknown80" },
-    { "opcode": 81, "size": -3, "name": "Unknown81" },
-    { "opcode": 82, "size": -3, "name": "Unknown82" },
-    { "opcode": 83, "size": -3, "name": "Unknown83" },
-    { "opcode": 84, "size": 2, "name": "ObjectExamine" },
-    { "opcode": 85, "size": -3, "name": "Unknown85" },
-    { "opcode": 86, "size": -3, "name": "Unknown86" },
-    { "opcode": 87, "size": -3, "name": "Unknown87" },
-    { "opcode": 88, "size": 2, "name": "NpcExamine" },
-    { "opcode": 89, "size": -3, "name": "Unknown89" },
-    { "opcode": 90, "size": -3, "name": "Unknown90" },
-    { "opcode": 91, "size": -3, "name": "Unknown91" },
-    { "opcode": 92, "size": -3, "name": "Unknown92" },
-    { "opcode": 93, "size": -3, "name": "Unknown93" },
-    { "opcode": 94, "size": -3, "name": "Unknown94" },
-    { "opcode": 95, "size": -3, "name": "Unknown95" },
-    { "opcode": 96, "size": -3, "name": "Unknown96" },
-    { "opcode": 97, "size": -3, "name": "Unknown97" },
-    { "opcode": 98, "size": -3, "name": "Unknown98" },
-    { "opcode": 99, "size": 4, "name": "Unknown99" },
-    { "opcode": 100, "size": -3, "name": "Unknown100" },
-    { "opcode": 101, "size": -3, "name": "Unknown101" },
-    { "opcode": 102, "size": -3, "name": "Unknown102" },
-    { "opcode": 103, "size": -3, "name": "Unknown103" },
-    { "opcode": 104, "size": -3, "name": "Unknown104" },
-    { "opcode": 105, "size": -3, "name": "Unknown105" },
-    { "opcode": 106, "size": -3, "name": "Unknown106" },
-    { "opcode": 107, "size": -1, "name": "Command" },
-    { "opcode": 108, "size": 0, "name": "CloseInterface" },
-    { "opcode": 109, "size": -3, "name": "Unknown109" },
-    { "opcode": 110, "size": -3, "name": "Unknown110" },
-    { "opcode": 111, "size": -3, "name": "Unknown111" },
-    { "opcode": 112, "size": -3, "name": "Unknown112" },
-    { "opcode": 113, "size": 4, "name": "ActionButton2" },
-    { "opcode": 114, "size": -3, "name": "Unknown114" },
-    { "opcode": 115, "size": 0, "name": "Ping" },
-    { "opcode": 116, "size": -3, "name": "Unknown116" },
-    { "opcode": 117, "size": -1, "name": "Unknown117" },
-    { "opcode": 118, "size": -3, "name": "Unknown118" },
-    { "opcode": 119, "size": -1, "name": "WalkMinimap" },
-    { "opcode": 120, "size": -3, "name": "Unknown120" },
-    { "opcode": 121, "size": -3, "name": "Unknown121" },
-    { "opcode": 122, "size": -3, "name": "Unknown122" },
-    { "opcode": 123, "size": 2, "name": "NpcAttack" },
-    { "opcode": 124, "size": -3, "name": "Unknown124" },
-    { "opcode": 125, "size": -3, "name": "Unknown125" },
-    { "opcode": 126, "size": -3, "name": "Unknown126" },
-    { "opcode": 127, "size": -1, "name": "StringInput" },
-    { "opcode": 128, "size": -3, "name": "Unknown128" },
-    { "opcode": 129, "size": -3, "name": "Unknown129" },
-    { "opcode": 130, "size": -3, "name": "Unknown130" },
-    { "opcode": 131, "size": 7, "name": "ItemGive" },
-    { "opcode": 132, "size": 8, "name": "RemoveFriend" },
-    { "opcode": 133, "size": -3, "name": "Unknown133" },
-    { "opcode": 134, "size": -3, "name": "ItemSelect2" },
-    { "opcode": 135, "size": -3, "name": "Unknown135" },
-    { "opcode": 136, "size": -3, "name": "Unknown136" },
-    { "opcode": 137, "size": -3, "name": "Unknown137" },
-    { "opcode": 138, "size": -1, "name": "WalkOther" },
-    { "opcode": 139, "size": -3, "name": "Unknown139" },
-    { "opcode": 140, "size": -3, "name": "Unknown140" },
-    { "opcode": 141, "size": -3, "name": "Unknown141" },
-    { "opcode": 142, "size": -3, "name": "Unknown142" },
-    { "opcode": 143, "size": -3, "name": "Unknown143" },
-    { "opcode": 144, "size": -3, "name": "Unknown144" },
-    { "opcode": 145, "size": -3, "name": "Unknown145" },
-    { "opcode": 146, "size": -3, "name": "Unknown146" },
-    { "opcode": 147, "size": -3, "name": "Unknown147" },
-    { "opcode": 148, "size": -3, "name": "Unknown148" },
-    { "opcode": 149, "size": -3, "name": "Unknown149" },
-    { "opcode": 150, "size": -3, "name": "Unknown150" },
-    { "opcode": 151, "size": -3, "name": "Unknown151" },
-    { "opcode": 152, "size": -3, "name": "ItemOption1b" },
-    { "opcode": 153, "size": -3, "name": "Unknown153" },
-    { "opcode": 154, "size": -3, "name": "MagicOnItem" },
-    { "opcode": 155, "size": -3, "name": "Unknown155" },
-    { "opcode": 156, "size": -3, "name": "Unknown156" },
-    { "opcode": 157, "size": -3, "name": "Unknown157" },
-    { "opcode": 158, "size": 6, "name": "ObjectOption1" },
-    { "opcode": 159, "size": -3, "name": "Unknown159" },
-    { "opcode": 160, "size": 2, "name": "PlayerOption1" },
-    { "opcode": 161, "size": -3, "name": "Unknown161" },
-    { "opcode": 162, "size": -3, "name": "Unknown162" },
-    { "opcode": 163, "size": -3, "name": "Unknown163" },
-    { "opcode": 164, "size": -3, "name": "Unknown164" },
-    { "opcode": 165, "size": 4, "name": "SettingsButton" },
-    { "opcode": 166, "size": -3, "name": "Unknown166" },
-    { "opcode": 167, "size": 9, "name": "SwitchItems" },
-    { "opcode": 168, "size": -3, "name": "Unknown168" },
-    { "opcode": 169, "size": 6, "name": "ActionButton3" },
-    { "opcode": 170, "size": -3, "name": "Unknown170" },
-    { "opcode": 171, "size": -3, "name": "Unknown171" },
-    { "opcode": 172, "size": -3, "name": "Unknown172" },
-    { "opcode": 173, "size": 6, "name": "ActionButton4" },
-    { "opcode": 174, "size": -3, "name": "Unknown174" },
-    { "opcode": 175, "size": -3, "name": "Unknown175" },
-    { "opcode": 176, "size": -3, "name": "Unknown176" },
-    { "opcode": 177, "size": -3, "name": "Unknown177" },
-    { "opcode": 178, "size": -1, "name": "PrivateMessage" },
-    { "opcode": 179, "size": 12, "name": "SwitchItems2" },
-    { "opcode": 180, "size": -3, "name": "Unknown180" },
-    { "opcode": 181, "size": -3, "name": "Unknown181" },
-    { "opcode": 182, "size": -3, "name": "Unknown182" },
-    { "opcode": 183, "size": -3, "name": "Unknown183" },
-    { "opcode": 184, "size": -3, "name": "Unknown184" },
-    { "opcode": 185, "size": -3, "name": "Unknown185" },
-    { "opcode": 186, "size": 8, "name": "ItemOperate" },
-    { "opcode": 187, "size": -3, "name": "Unknown187" },
-    { "opcode": 188, "size": -3, "name": "Unknown188" },
-    { "opcode": 189, "size": -3, "name": "LongInput" },
-    { "opcode": 190, "size": -3, "name": "ObjectBuild" },
-    { "opcode": 191, "size": -3, "name": "Unknown191" },
-    { "opcode": 192, "size": -3, "name": "Unknown192" },
-    { "opcode": 193, "size": -3, "name": "Unknown193" },
-    { "opcode": 194, "size": -3, "name": "Unknown194" },
-    { "opcode": 195, "size": -3, "name": "Unknown195" },
-    { "opcode": 196, "size": -3, "name": "Unknown196" },
-    { "opcode": 197, "size": -3, "name": "Unknown197" },
-    { "opcode": 198, "size": -3, "name": "Unknown198" },
-    { "opcode": 199, "size": 6, "name": "NpcOption3" },
-    { "opcode": 200, "size": 8, "name": "ClanKick" },
-    { "opcode": 201, "size": 6, "name": "PickupItem" },
-    { "opcode": 202, "size": -3, "name": "Unknown202" },
-    { "opcode": 203, "size": 8, "name": "ItemOption1" },
-    { "opcode": 204, "size": -3, "name": "Unknown204" },
-    { "opcode": 205, "size": -3, "name": "Unknown205" },
-    { "opcode": 206, "size": -3, "name": "Unknown206" },
-    { "opcode": 207, "size": -3, "name": "Unknown207" },
-    { "opcode": 208, "size": -3, "name": "Unknown208" },
-    { "opcode": 209, "size": -3, "name": "Unknown209" },
-    { "opcode": 210, "size": -3, "name": "Unknown210" },
-    { "opcode": 211, "size": 8, "name": "DropItem" },
-    { "opcode": 212, "size": -3, "name": "Unknown212" },
-    { "opcode": 213, "size": -3, "name": "Unknown213" },
-    { "opcode": 214, "size": -3, "name": "Unknown214" },
-    { "opcode": 215, "size": -3, "name": "Unknown215" },
-    { "opcode": 216, "size": -3, "name": "Unknown216" },
-    { "opcode": 217, "size": -3, "name": "Unknown217" },
-    { "opcode": 218, "size": -3, "name": "Unknown218" },
-    { "opcode": 219, "size": -3, "name": "Unknown219" },
-    { "opcode": 220, "size": 8, "name": "ItemSelect" },
-    { "opcode": 221, "size": -3, "name": "Unknown221" },
-    { "opcode": 222, "size": -1, "name": "PublicChat" },
-    { "opcode": 223, "size": -3, "name": "Unknown223" },
-    { "opcode": 224, "size": -3, "name": "ItemOnObject" },
-    { "opcode": 225, "size": -3, "name": "Unknown225" },
-    { "opcode": 226, "size": -3, "name": "Unknown226" },
-    { "opcode": 227, "size": 2, "name": "PlayerOption3" },
-    { "opcode": 228, "size": 6, "name": "ObjectOption2" },
-    { "opcode": 229, "size": -3, "name": "Unknown229" },
-    { "opcode": 230, "size": -3, "name": "Unknown230" },
-    { "opcode": 231, "size": -3, "name": "Unknown231" },
-    { "opcode": 232, "size": 6, "name": "ActionButton5" },
-    { "opcode": 233, "size": 6, "name": "ActionButton6" },
-    { "opcode": 234, "size": -3, "name": "Unknown234" },
-    { "opcode": 235, "size": -3, "name": "Unknown235" },
-    { "opcode": 236, "size": -3, "name": "Unknown236" },
-    { "opcode": 237, "size": -3, "name": "Unknown237" },
-    { "opcode": 238, "size": -3, "name": "Unknown238" },
-    { "opcode": 239, "size": -3, "name": "Unknown239" },
-    { "opcode": 240, "size": -3, "name": "Unknown240" },
-    { "opcode": 241, "size": -3, "name": "Unknown241" },
-    { "opcode": 242, "size": -3, "name": "Unknown242" },
-    { "opcode": 243, "size": -3, "name": "Unknown243" },
-    { "opcode": 244, "size": -3, "name": "Unknown244" },
-    { "opcode": 245, "size": -3, "name": "Unknown245" },
-    { "opcode": 246, "size": -3, "name": "Unknown246" },
-    { "opcode": 247, "size": 4, "name": "Unknown247" },
-    { "opcode": 248, "size": 1, "name": "Unknown248" },
-    { "opcode": 249, "size": -3, "name": "Unknown249" },
-    { "opcode": 250, "size": -3, "name": "Unknown250" },
-    { "opcode": 251, "size": -3, "name": "Unknown251" },
-    { "opcode": 252, "size": -3, "name": "Unknown252" },
-    { "opcode": 253, "size": -3, "name": "TradeAccept" },
-    { "opcode": 254, "size": -3, "name": "Unknown254" },
-    { "opcode": 255, "size": -3, "name": "Unknown255" }
+    {
+      "opcode": 0,
+      "size": -3,
+      "name": "Unknown0"
+    },
+    {
+      "opcode": 1,
+      "size": -3,
+      "name": "Unknown1"
+    },
+    {
+      "opcode": 2,
+      "size": 8,
+      "name": "RemoveIgnore"
+    },
+    {
+      "opcode": 3,
+      "size": 8,
+      "name": "EquipItem"
+    },
+    {
+      "opcode": 4,
+      "size": -3,
+      "name": "Unknown4"
+    },
+    {
+      "opcode": 5,
+      "size": -3,
+      "name": "Unknown5"
+    },
+    {
+      "opcode": 6,
+      "size": -3,
+      "name": "Unknown6"
+    },
+    {
+      "opcode": 7,
+      "size": 2,
+      "name": "NpcOption1"
+    },
+    {
+      "opcode": 8,
+      "size": -3,
+      "name": "Unknown8"
+    },
+    {
+      "opcode": 9,
+      "size": -3,
+      "name": "Unknown9"
+    },
+    {
+      "opcode": 10,
+      "size": -3,
+      "name": "Unknown10"
+    },
+    {
+      "opcode": 11,
+      "size": -3,
+      "name": "Unknown11"
+    },
+    {
+      "opcode": 12,
+      "size": -3,
+      "name": "Unknown12"
+    },
+    {
+      "opcode": 13,
+      "size": -3,
+      "name": "Unknown13"
+    },
+    {
+      "opcode": 14,
+      "size": -3,
+      "name": "Unknown14"
+    },
+    {
+      "opcode": 15,
+      "size": -3,
+      "name": "Unknown15"
+    },
+    {
+      "opcode": 16,
+      "size": -3,
+      "name": "Unknown16"
+    },
+    {
+      "opcode": 17,
+      "size": -3,
+      "name": "Unknown17"
+    },
+    {
+      "opcode": 18,
+      "size": -3,
+      "name": "Unknown18"
+    },
+    {
+      "opcode": 19,
+      "size": -3,
+      "name": "Unknown19"
+    },
+    {
+      "opcode": 20,
+      "size": -3,
+      "name": "Unknown20"
+    },
+    {
+      "opcode": 21,
+      "size": 6,
+      "name": "ActionButton"
+    },
+    {
+      "opcode": 22,
+      "size": 4,
+      "name": "UpdateAck"
+    },
+    {
+      "opcode": 23,
+      "size": -3,
+      "name": "Unknown23"
+    },
+    {
+      "opcode": 24,
+      "size": 6,
+      "name": "MagicOnNpc"
+    },
+    {
+      "opcode": 25,
+      "size": -3,
+      "name": "Unknown25"
+    },
+    {
+      "opcode": 26,
+      "size": -3,
+      "name": "Unknown26"
+    },
+    {
+      "opcode": 27,
+      "size": -3,
+      "name": "Unknown27"
+    },
+    {
+      "opcode": 28,
+      "size": -3,
+      "name": "Unknown28"
+    },
+    {
+      "opcode": 29,
+      "size": -3,
+      "name": "Unknown29"
+    },
+    {
+      "opcode": 30,
+      "size": 8,
+      "name": "AddFriend"
+    },
+    {
+      "opcode": 31,
+      "size": -3,
+      "name": "Unknown31"
+    },
+    {
+      "opcode": 32,
+      "size": -3,
+      "name": "Unknown32"
+    },
+    {
+      "opcode": 33,
+      "size": -3,
+      "name": "Unknown33"
+    },
+    {
+      "opcode": 34,
+      "size": -3,
+      "name": "Unknown34"
+    },
+    {
+      "opcode": 35,
+      "size": -3,
+      "name": "Unknown35"
+    },
+    {
+      "opcode": 36,
+      "size": -3,
+      "name": "Unknown36"
+    },
+    {
+      "opcode": 37,
+      "size": 2,
+      "name": "PlayerOption2"
+    },
+    {
+      "opcode": 38,
+      "size": 2,
+      "name": "ItemExamine"
+    },
+    {
+      "opcode": 39,
+      "size": -3,
+      "name": "Unknown39"
+    },
+    {
+      "opcode": 40,
+      "size": 16,
+      "name": "ItemOnItem"
+    },
+    {
+      "opcode": 41,
+      "size": -3,
+      "name": "Unknown41"
+    },
+    {
+      "opcode": 42,
+      "size": 8,
+      "name": "ClanJoin"
+    },
+    {
+      "opcode": 43,
+      "size": 4,
+      "name": "UserInput"
+    },
+    {
+      "opcode": 44,
+      "size": -3,
+      "name": "Unknown44"
+    },
+    {
+      "opcode": 45,
+      "size": -3,
+      "name": "Unknown45"
+    },
+    {
+      "opcode": 46,
+      "size": -3,
+      "name": "Unknown46"
+    },
+    {
+      "opcode": 47,
+      "size": 0,
+      "name": "Idle"
+    },
+    {
+      "opcode": 48,
+      "size": -3,
+      "name": "Unknown48"
+    },
+    {
+      "opcode": 49,
+      "size": -1,
+      "name": "WalkMain"
+    },
+    {
+      "opcode": 50,
+      "size": -3,
+      "name": "Unknown50"
+    },
+    {
+      "opcode": 51,
+      "size": -3,
+      "name": "Unknown51"
+    },
+    {
+      "opcode": 52,
+      "size": 2,
+      "name": "NpcOption2"
+    },
+    {
+      "opcode": 53,
+      "size": -3,
+      "name": "Unknown53"
+    },
+    {
+      "opcode": 54,
+      "size": -3,
+      "name": "Unknown54"
+    },
+    {
+      "opcode": 55,
+      "size": -3,
+      "name": "Unknown55"
+    },
+    {
+      "opcode": 56,
+      "size": -3,
+      "name": "Unknown56"
+    },
+    {
+      "opcode": 57,
+      "size": -3,
+      "name": "Unknown57"
+    },
+    {
+      "opcode": 58,
+      "size": -3,
+      "name": "Unknown58"
+    },
+    {
+      "opcode": 59,
+      "size": 6,
+      "name": "MouseClick"
+    },
+    {
+      "opcode": 60,
+      "size": 0,
+      "name": "MapRegionLoaded"
+    },
+    {
+      "opcode": 61,
+      "size": 8,
+      "name": "AddIgnore"
+    },
+    {
+      "opcode": 62,
+      "size": 0,
+      "name": "RegionObjects"
+    },
+    {
+      "opcode": 63,
+      "size": 6,
+      "name": "DialogueContinue"
+    },
+    {
+      "opcode": 64,
+      "size": -3,
+      "name": "Unknown64"
+    },
+    {
+      "opcode": 65,
+      "size": -3,
+      "name": "Unknown65"
+    },
+    {
+      "opcode": 66,
+      "size": -3,
+      "name": "Unknown66"
+    },
+    {
+      "opcode": 67,
+      "size": -3,
+      "name": "Unknown67"
+    },
+    {
+      "opcode": 68,
+      "size": -3,
+      "name": "Unknown68"
+    },
+    {
+      "opcode": 69,
+      "size": -3,
+      "name": "Unknown69"
+    },
+    {
+      "opcode": 70,
+      "size": 8,
+      "name": "MagicOnPlayer"
+    },
+    {
+      "opcode": 71,
+      "size": -3,
+      "name": "Unknown71"
+    },
+    {
+      "opcode": 72,
+      "size": -3,
+      "name": "Unknown72"
+    },
+    {
+      "opcode": 73,
+      "size": -3,
+      "name": "Unknown73"
+    },
+    {
+      "opcode": 74,
+      "size": -3,
+      "name": "Unknown74"
+    },
+    {
+      "opcode": 75,
+      "size": -3,
+      "name": "Unknown75"
+    },
+    {
+      "opcode": 76,
+      "size": -3,
+      "name": "Unknown76"
+    },
+    {
+      "opcode": 77,
+      "size": -3,
+      "name": "Unknown77"
+    },
+    {
+      "opcode": 78,
+      "size": -3,
+      "name": "Unknown78"
+    },
+    {
+      "opcode": 79,
+      "size": -3,
+      "name": "Unknown79"
+    },
+    {
+      "opcode": 80,
+      "size": -3,
+      "name": "Unknown80"
+    },
+    {
+      "opcode": 81,
+      "size": -3,
+      "name": "Unknown81"
+    },
+    {
+      "opcode": 82,
+      "size": -3,
+      "name": "Unknown82"
+    },
+    {
+      "opcode": 83,
+      "size": -3,
+      "name": "Unknown83"
+    },
+    {
+      "opcode": 84,
+      "size": 2,
+      "name": "ObjectExamine"
+    },
+    {
+      "opcode": 85,
+      "size": -3,
+      "name": "Unknown85"
+    },
+    {
+      "opcode": 86,
+      "size": -3,
+      "name": "Unknown86"
+    },
+    {
+      "opcode": 87,
+      "size": -3,
+      "name": "Unknown87"
+    },
+    {
+      "opcode": 88,
+      "size": 2,
+      "name": "NpcExamine"
+    },
+    {
+      "opcode": 89,
+      "size": -3,
+      "name": "Unknown89"
+    },
+    {
+      "opcode": 90,
+      "size": -3,
+      "name": "Unknown90"
+    },
+    {
+      "opcode": 91,
+      "size": -3,
+      "name": "Unknown91"
+    },
+    {
+      "opcode": 92,
+      "size": -3,
+      "name": "Unknown92"
+    },
+    {
+      "opcode": 93,
+      "size": -3,
+      "name": "Unknown93"
+    },
+    {
+      "opcode": 94,
+      "size": 0,
+      "name": "ObjectSelect2"
+    },
+    {
+      "opcode": 95,
+      "size": -3,
+      "name": "Unknown95"
+    },
+    {
+      "opcode": 96,
+      "size": -3,
+      "name": "Unknown96"
+    },
+    {
+      "opcode": 97,
+      "size": -3,
+      "name": "Unknown97"
+    },
+    {
+      "opcode": 98,
+      "size": -3,
+      "name": "Unknown98"
+    },
+    {
+      "opcode": 99,
+      "size": 4,
+      "name": "Unknown99"
+    },
+    {
+      "opcode": 100,
+      "size": -3,
+      "name": "Unknown100"
+    },
+    {
+      "opcode": 101,
+      "size": -3,
+      "name": "Unknown101"
+    },
+    {
+      "opcode": 102,
+      "size": -3,
+      "name": "Unknown102"
+    },
+    {
+      "opcode": 103,
+      "size": -3,
+      "name": "Unknown103"
+    },
+    {
+      "opcode": 104,
+      "size": -3,
+      "name": "Unknown104"
+    },
+    {
+      "opcode": 105,
+      "size": -3,
+      "name": "Unknown105"
+    },
+    {
+      "opcode": 106,
+      "size": -3,
+      "name": "Unknown106"
+    },
+    {
+      "opcode": 107,
+      "size": -1,
+      "name": "Command"
+    },
+    {
+      "opcode": 108,
+      "size": 0,
+      "name": "CloseInterface"
+    },
+    {
+      "opcode": 109,
+      "size": -3,
+      "name": "Unknown109"
+    },
+    {
+      "opcode": 110,
+      "size": -3,
+      "name": "Unknown110"
+    },
+    {
+      "opcode": 111,
+      "size": -3,
+      "name": "Unknown111"
+    },
+    {
+      "opcode": 112,
+      "size": -3,
+      "name": "Unknown112"
+    },
+    {
+      "opcode": 113,
+      "size": 4,
+      "name": "ActionButton2"
+    },
+    {
+      "opcode": 114,
+      "size": -3,
+      "name": "Unknown114"
+    },
+    {
+      "opcode": 115,
+      "size": 0,
+      "name": "Ping"
+    },
+    {
+      "opcode": 116,
+      "size": -3,
+      "name": "Unknown116"
+    },
+    {
+      "opcode": 117,
+      "size": -1,
+      "name": "Unknown117"
+    },
+    {
+      "opcode": 118,
+      "size": -3,
+      "name": "Unknown118"
+    },
+    {
+      "opcode": 119,
+      "size": -1,
+      "name": "WalkMinimap"
+    },
+    {
+      "opcode": 120,
+      "size": -3,
+      "name": "Unknown120"
+    },
+    {
+      "opcode": 121,
+      "size": -3,
+      "name": "Unknown121"
+    },
+    {
+      "opcode": 122,
+      "size": -3,
+      "name": "Unknown122"
+    },
+    {
+      "opcode": 123,
+      "size": 2,
+      "name": "NpcAttack"
+    },
+    {
+      "opcode": 124,
+      "size": -3,
+      "name": "Unknown124"
+    },
+    {
+      "opcode": 125,
+      "size": -3,
+      "name": "Unknown125"
+    },
+    {
+      "opcode": 126,
+      "size": -3,
+      "name": "Unknown126"
+    },
+    {
+      "opcode": 127,
+      "size": -1,
+      "name": "StringInput"
+    },
+    {
+      "opcode": 128,
+      "size": -3,
+      "name": "Unknown128"
+    },
+    {
+      "opcode": 129,
+      "size": -3,
+      "name": "Unknown129"
+    },
+    {
+      "opcode": 130,
+      "size": -3,
+      "name": "Unknown130"
+    },
+    {
+      "opcode": 131,
+      "size": 7,
+      "name": "ItemGive"
+    },
+    {
+      "opcode": 132,
+      "size": 8,
+      "name": "RemoveFriend"
+    },
+    {
+      "opcode": 133,
+      "size": -3,
+      "name": "Unknown133"
+    },
+    {
+      "opcode": 134,
+      "size": 8,
+      "name": "ItemSelect2"
+    },
+    {
+      "opcode": 135,
+      "size": -3,
+      "name": "Unknown135"
+    },
+    {
+      "opcode": 136,
+      "size": -3,
+      "name": "Unknown136"
+    },
+    {
+      "opcode": 137,
+      "size": -3,
+      "name": "Unknown137"
+    },
+    {
+      "opcode": 138,
+      "size": -1,
+      "name": "WalkOther"
+    },
+    {
+      "opcode": 139,
+      "size": -3,
+      "name": "Unknown139"
+    },
+    {
+      "opcode": 140,
+      "size": -3,
+      "name": "Unknown140"
+    },
+    {
+      "opcode": 141,
+      "size": -3,
+      "name": "Unknown141"
+    },
+    {
+      "opcode": 142,
+      "size": -3,
+      "name": "Unknown142"
+    },
+    {
+      "opcode": 143,
+      "size": -3,
+      "name": "Unknown143"
+    },
+    {
+      "opcode": 144,
+      "size": -3,
+      "name": "Unknown144"
+    },
+    {
+      "opcode": 145,
+      "size": -3,
+      "name": "Unknown145"
+    },
+    {
+      "opcode": 146,
+      "size": -3,
+      "name": "Unknown146"
+    },
+    {
+      "opcode": 147,
+      "size": -3,
+      "name": "Unknown147"
+    },
+    {
+      "opcode": 148,
+      "size": -3,
+      "name": "Unknown148"
+    },
+    {
+      "opcode": 149,
+      "size": -3,
+      "name": "Unknown149"
+    },
+    {
+      "opcode": 150,
+      "size": -3,
+      "name": "Unknown150"
+    },
+    {
+      "opcode": 151,
+      "size": -3,
+      "name": "Unknown151"
+    },
+    {
+      "opcode": 152,
+      "size": 8,
+      "name": "ItemOption1b"
+    },
+    {
+      "opcode": 153,
+      "size": -3,
+      "name": "Unknown153"
+    },
+    {
+      "opcode": 154,
+      "size": -1,
+      "name": "MagicOnItem"
+    },
+    {
+      "opcode": 155,
+      "size": -3,
+      "name": "Unknown155"
+    },
+    {
+      "opcode": 156,
+      "size": -3,
+      "name": "Unknown156"
+    },
+    {
+      "opcode": 157,
+      "size": -3,
+      "name": "Unknown157"
+    },
+    {
+      "opcode": 158,
+      "size": 6,
+      "name": "ObjectOption1"
+    },
+    {
+      "opcode": 159,
+      "size": -3,
+      "name": "Unknown159"
+    },
+    {
+      "opcode": 160,
+      "size": 2,
+      "name": "PlayerOption1"
+    },
+    {
+      "opcode": 161,
+      "size": -3,
+      "name": "Unknown161"
+    },
+    {
+      "opcode": 162,
+      "size": -3,
+      "name": "Unknown162"
+    },
+    {
+      "opcode": 163,
+      "size": -3,
+      "name": "Unknown163"
+    },
+    {
+      "opcode": 164,
+      "size": -3,
+      "name": "Unknown164"
+    },
+    {
+      "opcode": 165,
+      "size": 4,
+      "name": "SettingsButton"
+    },
+    {
+      "opcode": 166,
+      "size": -3,
+      "name": "Unknown166"
+    },
+    {
+      "opcode": 167,
+      "size": 9,
+      "name": "SwitchItems"
+    },
+    {
+      "opcode": 168,
+      "size": -3,
+      "name": "Unknown168"
+    },
+    {
+      "opcode": 169,
+      "size": 6,
+      "name": "ActionButton3"
+    },
+    {
+      "opcode": 170,
+      "size": -3,
+      "name": "Unknown170"
+    },
+    {
+      "opcode": 171,
+      "size": -3,
+      "name": "Unknown171"
+    },
+    {
+      "opcode": 172,
+      "size": -3,
+      "name": "Unknown172"
+    },
+    {
+      "opcode": 173,
+      "size": 6,
+      "name": "ActionButton4"
+    },
+    {
+      "opcode": 174,
+      "size": -3,
+      "name": "Unknown174"
+    },
+    {
+      "opcode": 175,
+      "size": -3,
+      "name": "Unknown175"
+    },
+    {
+      "opcode": 176,
+      "size": -3,
+      "name": "Unknown176"
+    },
+    {
+      "opcode": 177,
+      "size": -3,
+      "name": "Unknown177"
+    },
+    {
+      "opcode": 178,
+      "size": -1,
+      "name": "PrivateMessage"
+    },
+    {
+      "opcode": 179,
+      "size": 12,
+      "name": "SwitchItems2"
+    },
+    {
+      "opcode": 180,
+      "size": -3,
+      "name": "Unknown180"
+    },
+    {
+      "opcode": 181,
+      "size": -3,
+      "name": "Unknown181"
+    },
+    {
+      "opcode": 182,
+      "size": -3,
+      "name": "Unknown182"
+    },
+    {
+      "opcode": 183,
+      "size": -3,
+      "name": "Unknown183"
+    },
+    {
+      "opcode": 184,
+      "size": -3,
+      "name": "Unknown184"
+    },
+    {
+      "opcode": 185,
+      "size": -3,
+      "name": "Unknown185"
+    },
+    {
+      "opcode": 186,
+      "size": 8,
+      "name": "ItemOperate"
+    },
+    {
+      "opcode": 187,
+      "size": -3,
+      "name": "Unknown187"
+    },
+    {
+      "opcode": 188,
+      "size": -3,
+      "name": "Unknown188"
+    },
+    {
+      "opcode": 189,
+      "size": 8,
+      "name": "LongInput"
+    },
+    {
+      "opcode": 190,
+      "size": 6,
+      "name": "ObjectBuild"
+    },
+    {
+      "opcode": 191,
+      "size": -3,
+      "name": "Unknown191"
+    },
+    {
+      "opcode": 192,
+      "size": -3,
+      "name": "Unknown192"
+    },
+    {
+      "opcode": 193,
+      "size": -3,
+      "name": "Unknown193"
+    },
+    {
+      "opcode": 194,
+      "size": -3,
+      "name": "Unknown194"
+    },
+    {
+      "opcode": 195,
+      "size": -3,
+      "name": "Unknown195"
+    },
+    {
+      "opcode": 196,
+      "size": -3,
+      "name": "Unknown196"
+    },
+    {
+      "opcode": 197,
+      "size": -3,
+      "name": "Unknown197"
+    },
+    {
+      "opcode": 198,
+      "size": -3,
+      "name": "Unknown198"
+    },
+    {
+      "opcode": 199,
+      "size": 2,
+      "name": "NpcOption3"
+    },
+    {
+      "opcode": 200,
+      "size": 8,
+      "name": "ClanKick"
+    },
+    {
+      "opcode": 201,
+      "size": 6,
+      "name": "PickupItem"
+    },
+    {
+      "opcode": 202,
+      "size": -3,
+      "name": "Unknown202"
+    },
+    {
+      "opcode": 203,
+      "size": 8,
+      "name": "ItemOption1"
+    },
+    {
+      "opcode": 204,
+      "size": -3,
+      "name": "Unknown204"
+    },
+    {
+      "opcode": 205,
+      "size": -3,
+      "name": "Unknown205"
+    },
+    {
+      "opcode": 206,
+      "size": -3,
+      "name": "Unknown206"
+    },
+    {
+      "opcode": 207,
+      "size": -3,
+      "name": "Unknown207"
+    },
+    {
+      "opcode": 208,
+      "size": -3,
+      "name": "Unknown208"
+    },
+    {
+      "opcode": 209,
+      "size": -3,
+      "name": "Unknown209"
+    },
+    {
+      "opcode": 210,
+      "size": -3,
+      "name": "Unknown210"
+    },
+    {
+      "opcode": 211,
+      "size": 8,
+      "name": "DropItem"
+    },
+    {
+      "opcode": 212,
+      "size": -3,
+      "name": "Unknown212"
+    },
+    {
+      "opcode": 213,
+      "size": -3,
+      "name": "Unknown213"
+    },
+    {
+      "opcode": 214,
+      "size": -3,
+      "name": "Unknown214"
+    },
+    {
+      "opcode": 215,
+      "size": -3,
+      "name": "Unknown215"
+    },
+    {
+      "opcode": 216,
+      "size": -3,
+      "name": "Unknown216"
+    },
+    {
+      "opcode": 217,
+      "size": -3,
+      "name": "Unknown217"
+    },
+    {
+      "opcode": 218,
+      "size": -3,
+      "name": "Unknown218"
+    },
+    {
+      "opcode": 219,
+      "size": -3,
+      "name": "Unknown219"
+    },
+    {
+      "opcode": 220,
+      "size": 8,
+      "name": "ItemSelect"
+    },
+    {
+      "opcode": 221,
+      "size": -3,
+      "name": "Unknown221"
+    },
+    {
+      "opcode": 222,
+      "size": -1,
+      "name": "PublicChat"
+    },
+    {
+      "opcode": 223,
+      "size": -3,
+      "name": "Unknown223"
+    },
+    {
+      "opcode": 224,
+      "size": 14,
+      "name": "ItemOnObject"
+    },
+    {
+      "opcode": 225,
+      "size": -3,
+      "name": "Unknown225"
+    },
+    {
+      "opcode": 226,
+      "size": -3,
+      "name": "Unknown226"
+    },
+    {
+      "opcode": 227,
+      "size": 2,
+      "name": "PlayerOption3"
+    },
+    {
+      "opcode": 228,
+      "size": 6,
+      "name": "ObjectOption2"
+    },
+    {
+      "opcode": 229,
+      "size": -3,
+      "name": "Unknown229"
+    },
+    {
+      "opcode": 230,
+      "size": -3,
+      "name": "Unknown230"
+    },
+    {
+      "opcode": 231,
+      "size": -3,
+      "name": "Unknown231"
+    },
+    {
+      "opcode": 232,
+      "size": 6,
+      "name": "ActionButton5"
+    },
+    {
+      "opcode": 233,
+      "size": 6,
+      "name": "ActionButton6"
+    },
+    {
+      "opcode": 234,
+      "size": -3,
+      "name": "Unknown234"
+    },
+    {
+      "opcode": 235,
+      "size": -3,
+      "name": "Unknown235"
+    },
+    {
+      "opcode": 236,
+      "size": -3,
+      "name": "Unknown236"
+    },
+    {
+      "opcode": 237,
+      "size": -3,
+      "name": "Unknown237"
+    },
+    {
+      "opcode": 238,
+      "size": -3,
+      "name": "Unknown238"
+    },
+    {
+      "opcode": 239,
+      "size": -3,
+      "name": "Unknown239"
+    },
+    {
+      "opcode": 240,
+      "size": -3,
+      "name": "Unknown240"
+    },
+    {
+      "opcode": 241,
+      "size": -3,
+      "name": "Unknown241"
+    },
+    {
+      "opcode": 242,
+      "size": -3,
+      "name": "Unknown242"
+    },
+    {
+      "opcode": 243,
+      "size": -3,
+      "name": "Unknown243"
+    },
+    {
+      "opcode": 244,
+      "size": -3,
+      "name": "Unknown244"
+    },
+    {
+      "opcode": 245,
+      "size": -3,
+      "name": "Unknown245"
+    },
+    {
+      "opcode": 246,
+      "size": -3,
+      "name": "Unknown246"
+    },
+    {
+      "opcode": 247,
+      "size": 4,
+      "name": "Unknown247"
+    },
+    {
+      "opcode": 248,
+      "size": 1,
+      "name": "Unknown248"
+    },
+    {
+      "opcode": 249,
+      "size": -3,
+      "name": "Unknown249"
+    },
+    {
+      "opcode": 250,
+      "size": -3,
+      "name": "Unknown250"
+    },
+    {
+      "opcode": 251,
+      "size": -3,
+      "name": "Unknown251"
+    },
+    {
+      "opcode": 252,
+      "size": -3,
+      "name": "Unknown252"
+    },
+    {
+      "opcode": 253,
+      "size": 2,
+      "name": "TradeAccept"
+    },
+    {
+      "opcode": 254,
+      "size": -3,
+      "name": "Unknown254"
+    },
+    {
+      "opcode": 255,
+      "size": -3,
+      "name": "Unknown255"
+    }
   ]
 }

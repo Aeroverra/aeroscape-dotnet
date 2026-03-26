@@ -377,22 +377,26 @@ public sealed class SwitchItems2Decoder : IPacketDecoder
     }
 }
 
-/// <summary>Item on item: opcode 40.</summary>
+/// <summary>Item on item: opcode 40. 16 bytes total.</summary>
 public sealed class ItemOnItemDecoder : IPacketDecoder
 {
     public Type MessageType => typeof(ItemOnItemMessage);
 
     public object? Decode(PlayerSession session, int opcode, ReadOnlySequence<byte> payload)
     {
-        // ItemOnItem packet is complex; reads depend on Java stream implementation
-        // Read all bytes available as fields
+        // RS 508 ItemOnItem: the Java handler only reads the first 4 bytes:
+        //   readSignedWordBigEndian() → usedWith (the item used on)
+        //   readSignedWordA() → itemUsed (the item being used)
+        // The remaining 12 bytes are interface/slot data that the legacy server ignores.
         var r = new RsReader(payload);
-        // Approximate decode based on common RS 508 implementations
-        int usedWithId = r.ReadUnsignedWord();
-        int itemUsedId = r.ReadUnsignedWord();
+        int usedWithId = r.ReadSignedWordBigEndian();
+        int itemUsedId = r.ReadSignedWordA();
+        // Remaining bytes: usedWithSlot, itemUsedSlot, interface hashes (ignored by legacy)
         int usedWithSlot = r.ReadUnsignedWord();
         int itemUsedSlot = r.ReadUnsignedWord();
-        return new ItemOnItemMessage(usedWithId, itemUsedId, usedWithSlot, itemUsedSlot, 0, 0);
+        int usedWithInterface = r.ReadDWord();
+        int itemUsedInterface = r.ReadDWord();
+        return new ItemOnItemMessage(usedWithId, itemUsedId, usedWithSlot, itemUsedSlot, usedWithInterface, itemUsedInterface);
     }
 }
 
@@ -477,17 +481,18 @@ public sealed class MagicOnPlayerDecoder : IPacketDecoder
     }
 }
 
-/// <summary>Item on object: opcode 224.</summary>
+/// <summary>Item on object: opcode 224. 14 bytes in RS 508.</summary>
 public sealed class ItemOnObjectDecoder : IPacketDecoder
 {
     public Type MessageType => typeof(ItemOnObjectMessage);
 
     public object? Decode(PlayerSession session, int opcode, ReadOnlySequence<byte> payload)
     {
+        // Java handler reads: readUnsignedWord() → objectId (usedWith), readSignedWordA() → itemId
+        // Remaining bytes are object x/y, slot, interface hash (not read by legacy).
         var r = new RsReader(payload);
-        // Approximate decode
         int objectId = r.ReadUnsignedWord();
-        int itemId = r.ReadUnsignedWord();
+        int itemId = r.ReadSignedWordA();
         return new ItemOnObjectMessage(objectId, itemId);
     }
 }
@@ -608,7 +613,7 @@ public sealed class IdleDecoder : IPacketDecoder
         => new IdleMessage();
 }
 
-/// <summary>Dialogue continue: opcode 63 (0 bytes).</summary>
+/// <summary>Dialogue continue: opcode 63 (6 bytes — interface hash + slot, consumed but not used by legacy).</summary>
 public sealed class DialogueContinueDecoder : IPacketDecoder
 {
     public Type MessageType => typeof(DialogueContinueMessage);

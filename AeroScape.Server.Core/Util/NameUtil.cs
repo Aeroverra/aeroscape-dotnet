@@ -34,7 +34,7 @@ public static class NameUtil
 
     public static string LongToString(long l)
     {
-        if (l <= 0L || l >= 0x5B5B57F8A98L)
+        if (l <= 0L || l >= 0x5B5B57F8A98A5DD1L)
             return "invalid_name";
 
         if (l % 37L == 0L)
