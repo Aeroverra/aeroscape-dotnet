@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AeroScape.Server.Network")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+20bad076ed3749c4be039333ddf48f3e0d46c309")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+dab79224637fe46637b21026db8f471402aca123")]
 [assembly: System.Reflection.AssemblyProductAttribute("AeroScape.Server.Network")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AeroScape.Server.Network")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

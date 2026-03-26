@@ -14,3 +14,4 @@
 /home/aeroverra/.openclaw/workspace/projects/aeroscape-dotnet/AeroScape.Server.Network/obj/Debug/net10.0/AeroScape.Server.Network.pdb
 /home/aeroverra/.openclaw/workspace/projects/aeroscape-dotnet/AeroScape.Server.Network/obj/Debug/net10.0/ref/AeroScape.Server.Network.dll
 /home/aeroverra/.openclaw/workspace/projects/aeroscape-dotnet/AeroScape.Server.Network/obj/Debug/net10.0/AeroScape.Server.Network.sourcelink.json
+/home/aeroverra/.openclaw/workspace/projects/aeroscape-dotnet/AeroScape.Server.Network/bin/Debug/net10.0/Protocol/Protocol_508.json

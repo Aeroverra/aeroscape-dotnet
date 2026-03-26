@@ -11,6 +11,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="..\AeroScape.Server.Network\Protocol\Protocol_508.json" Link="Protocol_508.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
