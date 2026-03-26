@@ -14,14 +14,18 @@ public sealed class WalkQueue
 
     public void HandleWalk(Player player, WalkMessage message)
     {
-        if (player.FreezeDelay > 0)
-        {
-            return;
-        }
+        ClearInteractions(player);
+        player.InterfaceId = -1;
+        player.ChatboxInterfaceId = -1;
 
         ResetWalkingQueue(player);
         player.AutoCasting = false;
         player.IsRunning = message.IsRunning;
+
+        if (player.FreezeDelay > 0)
+        {
+            return;
+        }
 
         int firstX = message.FirstX - (player.MapRegionX - 6) * 8;
         int firstY = message.FirstY - (player.MapRegionY - 6) * 8;
@@ -31,17 +35,6 @@ public sealed class WalkQueue
         {
             AddToWalkingQueue(player, firstX + message.PathX[i], firstY + message.PathY[i]);
         }
-
-        player.ItemPickup = false;
-        player.PlayerOption1 = false;
-        player.PlayerOption2 = false;
-        player.PlayerOption3 = false;
-        player.NpcOption1 = false;
-        player.NpcOption2 = false;
-        player.ObjectOption1 = false;
-        player.ObjectOption2 = false;
-        player.AttackingPlayer = false;
-        player.AttackingNPC = false;
 
         if (player.FaceToReq != 65535)
         {
@@ -126,6 +119,13 @@ public sealed class WalkQueue
         player.WalkingQueue[0] = -1;
         player.WQueueReadPtr = 1;
         player.WQueueWritePtr = 1;
+    }
+
+    public void StopMovement(Player player)
+    {
+        ResetWalkingQueue(player);
+        player.WalkDir = -1;
+        player.RunDir = -1;
     }
 
     public void AddToWalkingQueue(Player player, int x, int y)
@@ -220,5 +220,24 @@ public sealed class WalkQueue
         }
 
         return dy > 0 ? 1 : -1;
+    }
+
+    private static void ClearInteractions(Player player)
+    {
+        player.ItemPickup = false;
+        player.PlayerOption1 = false;
+        player.PlayerOption2 = false;
+        player.PlayerOption3 = false;
+        player.NpcOption1 = false;
+        player.NpcOption2 = false;
+        player.NpcOption3 = false;
+        player.ObjectOption1 = false;
+        player.ObjectOption2 = false;
+        player.AttackingPlayer = false;
+        player.AttackingNPC = false;
+        player.AttackPlayer = 0;
+        player.AttackNPC = 0;
+        player.FollowingPlayer = false;
+        player.FollowPlayerIndex = 0;
     }
 }

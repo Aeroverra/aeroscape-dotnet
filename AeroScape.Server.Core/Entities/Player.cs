@@ -17,6 +17,7 @@ public class Player
     public int PlayerId { get; set; }
     public string Username { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
+    public string PasswordHash { get; set; } = string.Empty;
     public int Rights { get; set; }
     public bool Online { get; set; }
     public bool[] Disconnected { get; set; } = new bool[2];
@@ -109,7 +110,7 @@ public class Player
     public int[] ItemsN { get; set; } = new int[28];
 
     // ── Bank ────────────────────────────────────────────────────────────────
-    public const int BankSize = 500;
+    public const int BankSize = 1000;
     public int[] BankItems { get; set; } = new int[BankSize];
     public int[] BankItemsN { get; set; } = new int[BankSize];
     public int[] TabStartSlot { get; set; } = new int[11];
@@ -117,6 +118,10 @@ public class Player
     public int ViewingBankTab { get; set; } = 10;
     public bool WithdrawNote { get; set; }
     public bool InsertMode { get; set; }
+    public int BankTabConfig1 { get; set; }
+    public int BankTabConfig2 { get; set; }
+    public int BankTabConfig3 { get; set; } = -2013265920;
+    public int BankFreeSlotCount { get; set; }
 
     // ── Energy / Special ────────────────────────────────────────────────────
     public int RunEnergy { get; set; } = 100;
@@ -166,7 +171,7 @@ public class Player
     public bool UseClaws { get; set; }
 
     // ── Prayer Hitter counter (for protection prayer bypass) ────────────
-    public int Hitter { get; set; }
+    public int Hitter { get; set; } = 5;
     public int ClickDelay { get; set; } = -1;
     public int NpcDelay { get; set; }
     public int DeathDelay { get; set; } = 7;
@@ -229,6 +234,7 @@ public class Player
     // ── Player / NPC lists for update ───────────────────────────────────────
     public const int MaxPlayers = 2000;
     public const int MaxNpcs = 50000;
+    public static int maxPlayers { get; set; } = MaxPlayers;
     public Player?[] PlayerList { get; set; } = new Player?[MaxPlayers];
     public byte[] PlayersInList { get; set; } = new byte[MaxPlayers];
     public int PlayerListSize { get; set; }
@@ -243,11 +249,18 @@ public class Player
     public int Dialogue { get; set; }
     public int Choice { get; set; }
     public int DestroyItemId { get; set; }
+    public int InputId { get; set; } = -1;
 
     // ── Click state ─────────────────────────────────────────────────────────
     public int ClickX { get; set; }
     public int ClickY { get; set; }
     public int ClickId { get; set; }
+    public int LastObjectX { get; set; }
+    public int LastObjectY { get; set; }
+    public int ConstInterface { get; set; }
+    public int[] NextRoom { get; set; } = new int[3];
+    public int ReqX { get; set; } = -1;
+    public int ReqY { get; set; } = -1;
 
     // ── Login ───────────────────────────────────────────────────────────────
     public int LoginStage { get; set; }
@@ -267,6 +280,11 @@ public class Player
     public bool[] TradeAccept { get; set; } = new bool[2];
     public int TradePlayer { get; set; }
     public int TradeStage { get; set; }
+    public string TradeStatusText { get; set; } = string.Empty;
+    public string TradePartnerText { get; set; } = string.Empty;
+    public string TradeFreeSlotText { get; set; } = string.Empty;
+    public string TradeConfirmTextSelf { get; set; } = string.Empty;
+    public string TradeConfirmTextPartner { get; set; } = string.Empty;
 
     // ── Duel ────────────────────────────────────────────────────────────────
     public bool DuelReady { get; set; }
@@ -284,6 +302,8 @@ public class Player
     public bool OwnHouse { get; set; }
     public int PersonHouse { get; set; }
     public bool BuildingMode { get; set; }
+    public string ConstructionRoomsData { get; set; } = string.Empty;
+    public string ConstructionFurnitureData { get; set; } = string.Empty;
 
     // ── Summoning ───────────────────────────────────────────────────────────
     public int FamiliarType { get; set; }
@@ -392,6 +412,275 @@ public class Player
     public int YellTimer { get; set; }
     public int SuggestionTimer { get; set; }
 
+    // ── Legacy Player.java compatibility fields ────────────────────────────
+    public long lastVeng { get; set; }
+    public bool graveStone { get; set; }
+    public int gsH { get; set; }
+    public int gsX { get; set; }
+    public NPC? follower { get; set; }
+    public int gsY { get; set; }
+    public int constInterface { get; set; }
+    public int lastObjectX { get; set; }
+    public int lastObjectY { get; set; }
+    public int taken { get; set; }
+    public bool customMapdata { get; set; }
+    public int graveStoneTimer { get; set; }
+    public int actionButtonTimer { get; set; }
+    public int objectTimer { get; set; }
+    public int reqY { get; set; }
+    public int reqX { get; set; }
+    public int animTimer { get; set; }
+    public bool correctClient { get; set; }
+    public int iA { get; set; }
+    public bool waiting { get; set; }
+    public int currentSlot { get; set; }
+    public int inputId { get; set; } = -1;
+    public int inputItemId { get; set; }
+    public int inputItemIndex { get; set; }
+    public object? magicNPC { get; set; }
+    public int modernDamageDelay { get; set; } = -1;
+    public object? pTrade { get; set; }
+    public int modernMagicDelay { get; set; }
+    public int geoffers { get; set; }
+    public int secHit2 { get; set; }
+    public int CV2 { get; set; }
+    public int smithType { get; set; }
+    public bool hasCannon { get; set; }
+    public int[] cannonC { get; set; } = new int[2];
+    public int[] sitems { get; set; } = new int[40];
+    public int[] sitemsN { get; set; } = new int[1000];
+    public int thirdHit2 { get; set; }
+    public int fourHit2 { get; set; }
+    public int clawTimer2 { get; set; }
+    public bool UseClaws2 { get; set; }
+    public int[] offerItem { get; set; } = new int[6];
+    public int[] offerAmount { get; set; } = new int[6];
+    public int[] currentAmount { get; set; } = new int[6];
+    public int[] offerType { get; set; } = new int[6];
+    public int[] offerPrice { get; set; } = new int[6];
+    public int secHit { get; set; }
+    public int fourHit { get; set; }
+    public int[] partyA { get; set; } = new int[20];
+    public int[] partyAN { get; set; } = new int[20];
+    public bool party { get; set; }
+    public int hasCollect { get; set; }
+    public string[][] pgeSO { get; set; } = Array.Empty<string[]>();
+    public string[][] pgeBO { get; set; } = Array.Empty<string[]>();
+    public int modernSpell { get; set; }
+    public string[][] collects { get; set; } = Array.Empty<string[]>();
+    public bool usingAutoCast { get; set; }
+    public bool castAuto { get; set; }
+    public int randomSkill { get; set; }
+    public int chosenSkill { get; set; }
+    public int randomInt { get; set; }
+    public bool IsShopping { get; set; }
+    public bool geb { get; set; }
+    public int MyShopID { get; set; }
+    public bool UpdateShop { get; set; }
+    public object? NPCS { get; set; }
+    public int Update { get; set; }
+    public int LoadedBackup { get; set; }
+    public int zkc { get; set; }
+    public int bkc { get; set; }
+    public int akc { get; set; }
+    public int skc { get; set; }
+    public int DestroyItem { get; set; }
+    public int DestroyItemSlot { get; set; }
+    public int TradeWithPerson { get; set; }
+    public int DFStimer { get; set; }
+    public int BoatTimer { get; set; }
+    public int ThunderTimer { get; set; }
+    public int DragonTimer { get; set; }
+    public int CrashTimer { get; set; }
+    public int FadeTimer { get; set; }
+    public string password2 { get; set; } = string.Empty;
+    public int HeadTimer { get; set; } = -1;
+    public bool swapAsNote { get; set; }
+    public bool noteItems { get; set; }
+    public bool logmessage { get; set; }
+    public bool ClanGame { get; set; }
+    public int[] destroyItem { get; set; } = Array.Empty<int>();
+    public int[] destroyItemAmt { get; set; } = Array.Empty<int>();
+    public int destroyItemInt { get; set; }
+    public int[] SaraPeople { get; set; } = Array.Empty<int>();
+    public int[] ZammyPeople { get; set; } = Array.Empty<int>();
+    public int FightEnemys { get; set; }
+    public int[] FightPeople { get; set; } = Array.Empty<int>();
+    public int GotThere { get; set; }
+    public int ClanTele { get; set; }
+    public int JadTele { get; set; }
+    public int[] ClanMember { get; set; } = Array.Empty<int>();
+    public int ClanTimer { get; set; }
+    public bool ClanReady { get; set; }
+    public int ClanPartner { get; set; }
+    public int ClanSide { get; set; }
+    public int clanheight { get; set; }
+    public int Opposing { get; set; }
+    public bool ClanBattle { get; set; }
+    public int ClanCount { get; set; }
+    public int[] HouseObjects { get; set; } = Array.Empty<int>();
+    public int[] HouseX { get; set; } = Array.Empty<int>();
+    public int[] HouseY { get; set; } = Array.Empty<int>();
+    public int Room0 { get; set; }
+    public int Room1 { get; set; }
+    public int Room2 { get; set; }
+    public int Room3 { get; set; }
+    public int Room4 { get; set; }
+    public bool KickPlayers { get; set; }
+    public int Rooms { get; set; }
+    public bool buildMode { get; set; }
+    public int RoomDir { get; set; }
+    public int Room0Type { get; set; }
+    public int Room1Type { get; set; }
+    public int Room2Type { get; set; }
+    public int Room3Type { get; set; }
+    public int Room4Type { get; set; }
+    public bool TalkAgent { get; set; }
+    public bool DecorChange { get; set; }
+    public int TeleBackTimer { get; set; } = -1;
+    public int HLastX { get; set; }
+    public int HLastY { get; set; }
+    public int lastHeight { get; set; }
+    public int Garden { get; set; }
+    public int Garden1 { get; set; }
+    public int Garden2 { get; set; }
+    public int Garden3 { get; set; }
+    public int Garden4 { get; set; }
+    public int HX { get; set; }
+    public int HY { get; set; }
+    public int XremoveSlot { get; set; }
+    public int XinterfaceID { get; set; }
+    public int XremoveID { get; set; }
+    public string LocatedAt { get; set; } = string.Empty;
+    public int SlayerAm { get; set; }
+    public bool Farm { get; set; }
+    public int SlayerCaveTimer { get; set; } = -1;
+    public int NPC { get; set; }
+    public int wallTimer1 { get; set; }
+    public int wallTimer2 { get; set; }
+    public int wallTimer3 { get; set; }
+    public int wallTimer4 { get; set; }
+    public int wallTimer5 { get; set; }
+    public int SwingTimer1 { get; set; }
+    public int SwingTimer2 { get; set; }
+    public int SwingTimer3 { get; set; }
+    public int LogTimer { get; set; }
+    public int NetTimer { get; set; }
+    public int[] shop2 { get; set; } = Array.Empty<int>();
+    public int[] shop2n { get; set; } = Array.Empty<int>();
+    public int[] shop2p { get; set; } = Array.Empty<int>();
+    public int[] shop3 { get; set; } = Array.Empty<int>();
+    public int[] shop3n { get; set; } = Array.Empty<int>();
+    public int[] shop3p { get; set; } = Array.Empty<int>();
+    public int[] shop4 { get; set; } = Array.Empty<int>();
+    public int[] shop4n { get; set; } = Array.Empty<int>();
+    public int[] shop4p { get; set; } = Array.Empty<int>();
+    public int[] shop5 { get; set; } = Array.Empty<int>();
+    public int[] shop5n { get; set; } = Array.Empty<int>();
+    public int[] shop5p { get; set; } = Array.Empty<int>();
+    public int[] shop6 { get; set; } = Array.Empty<int>();
+    public int[] shop6n { get; set; } = Array.Empty<int>();
+    public int[] shop6p { get; set; } = Array.Empty<int>();
+    public int[] shop7 { get; set; } = Array.Empty<int>();
+    public int[] shop7n { get; set; } = Array.Empty<int>();
+    public int[] shop7p { get; set; } = Array.Empty<int>();
+    public int[] shop8 { get; set; } = Array.Empty<int>();
+    public int[] shop8n { get; set; } = Array.Empty<int>();
+    public int[] shop8p { get; set; } = Array.Empty<int>();
+    public int[] shop9 { get; set; } = Array.Empty<int>();
+    public int[] shop9n { get; set; } = Array.Empty<int>();
+    public int[] shop9p { get; set; } = Array.Empty<int>();
+    public int[] shop10 { get; set; } = Array.Empty<int>();
+    public int[] shop10n { get; set; } = Array.Empty<int>();
+    public int[] shop10p { get; set; } = Array.Empty<int>();
+    public int[] shop11 { get; set; } = Array.Empty<int>();
+    public int[] shop11n { get; set; } = Array.Empty<int>();
+    public int[] shop11p { get; set; } = Array.Empty<int>();
+    public int[] shop12 { get; set; } = Array.Empty<int>();
+    public int[] shop12n { get; set; } = Array.Empty<int>();
+    public int[] shop12p { get; set; } = Array.Empty<int>();
+    public int[] shop13 { get; set; } = Array.Empty<int>();
+    public int[] shop13n { get; set; } = Array.Empty<int>();
+    public int[] shop13p { get; set; } = Array.Empty<int>();
+    public int[] shop14 { get; set; } = Array.Empty<int>();
+    public int[] shop14n { get; set; } = Array.Empty<int>();
+    public int[] shop14p { get; set; } = Array.Empty<int>();
+    public int[] shop16 { get; set; } = Array.Empty<int>();
+    public int[] shop16n { get; set; } = Array.Empty<int>();
+    public int[] shop16p { get; set; } = Array.Empty<int>();
+    public int viewings { get; set; }
+    public int PkTimer { get; set; }
+    public int NewEmote { get; set; }
+    public int followPlayer { get; set; }
+    public int bountyOpp { get; set; }
+    public int SkillCapes { get; set; }
+    public int Cost { get; set; }
+    public int ItemName { get; set; }
+    public bool[] leveledUp { get; set; } = Array.Empty<bool>();
+    public int leveledUpSkill { get; set; }
+    public int skillMenu { get; set; }
+    public int trainingSkill { get; set; }
+    public int cwTimer { get; set; }
+    public int cwzamTimer { get; set; }
+    public int tPartner { get; set; }
+    public int[] ShopItemCost { get; set; } = Array.Empty<int>();
+    public int[] ShopItemsA { get; set; } = Array.Empty<int>();
+    public bool[] tAccept { get; set; } = Array.Empty<bool>();
+    public object? socket { get; set; }
+    public WoodcuttingSkill? wc { get; set; }
+    public MiningSkill? mi { get; set; }
+    public object? frames { get; set; }
+    public int posionHit1 { get; set; }
+    public int posionHit2 { get; set; }
+    public int[] skillLvlA { get; set; } = Array.Empty<int>();
+    public int defLow { get; set; }
+    public int strLow { get; set; }
+    public int atkLow { get; set; }
+    public int rangeLow { get; set; }
+    public int mageLow { get; set; }
+    public int defMid { get; set; }
+    public int strMid { get; set; }
+    public int atkMid { get; set; }
+    public int rapidRestore { get; set; }
+    public int rapidHeal { get; set; }
+    public int protItems { get; set; }
+    public int rangeMid { get; set; }
+    public int mageMid { get; set; }
+    public int defHigh { get; set; }
+    public int strHigh { get; set; }
+    public int atkHigh { get; set; }
+    public int prayMage { get; set; }
+    public int prayRange { get; set; }
+    public int prayMelee { get; set; }
+    public int rangeHigh { get; set; }
+    public int mageHigh { get; set; }
+    public int retribution { get; set; }
+    public int redepmtion { get; set; }
+    public int smite { get; set; }
+    public int praySummon { get; set; }
+    public int chivalry { get; set; }
+    public int piety { get; set; }
+    public bool showAttackOption { get; set; }
+    public int deathMessage { get; set; }
+    public int messageCount { get; set; }
+    public int memberCount { get; set; }
+    public int objectX { get; set; }
+    public int objectY { get; set; }
+    public int objectHeight { get; set; }
+    public int Members { get; set; }
+    public int Counted { get; set; }
+    public int MyCount { get; set; }
+    public int MyCount2 { get; set; }
+    public int totalXP { get; set; }
+    public int totalz { get; set; }
+    public int DragTimer { get; set; }
+    public string s1 { get; set; } = string.Empty;
+    public string s2 { get; set; } = string.Empty;
+    public string s3 { get; set; } = string.Empty;
+    public string LastTickMessage { get; set; } = string.Empty;
+    public int SpecialBarInterface { get; set; } = -1;
+    public int SpecialBarChild { get; set; } = -1;
+
     // ══════════════════════════════════════════════════════════════════════════
     //  Methods (pure game-state logic, no network I/O)
     // ══════════════════════════════════════════════════════════════════════════
@@ -417,6 +706,8 @@ public class Player
         Crafting = new CraftingSkill(this);
         Herblore = new HerbloreSkill(this);
         Runecrafting = new RunecraftingSkill(this);
+        wc = Woodcutting;
+        mi = Mining;
 
         // Default look (male)
         Look[0] = 0;  // Hair

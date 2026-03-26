@@ -69,6 +69,7 @@ public class GameEngine : BackgroundService
     private readonly ShopService _shops;
     private readonly PrayerService _prayers;
     private readonly DeathService _deaths;
+    private readonly LegacyFileManager _fileManager;
     private readonly NpcSpawnLoader _npcSpawnLoader;
     private readonly GroundItemManager _groundItems;
     private bool _worldLoaded;
@@ -87,6 +88,7 @@ public class GameEngine : BackgroundService
         ShopService shops,
         PrayerService prayers,
         DeathService deaths,
+        LegacyFileManager fileManager,
         NpcSpawnLoader npcSpawnLoader,
         GroundItemManager groundItems)
     {
@@ -95,6 +97,7 @@ public class GameEngine : BackgroundService
         _shops = shops;
         _prayers = prayers;
         _deaths = deaths;
+        _fileManager = fileManager;
         _npcSpawnLoader = npcSpawnLoader;
         _groundItems = groundItems;
         PlayerCombat = new PlayerVsPlayerCombat(this, pvpLogger);
@@ -434,9 +437,33 @@ public class GameEngine : BackgroundService
     {
         // Save timer
         if (p.SaveTimer > 0)
+        {
             p.SaveTimer--;
+        }
+        else
+        {
+            _fileManager.SaveCharacterSnapshot(p);
+            p.SaveTimer = 10;
+        }
+
         if (p.JailTimer > 0)
+        {
             p.JailTimer--;
+        }
+        if (p.JailTimer == 0)
+        {
+            p.RequestForceChat("I have been jailed for breaking the rules.");
+            p.JailTimer = 20;
+        }
+
+        if (p.AbsX == p.ReqX)
+        {
+            p.ReqX = -1;
+        }
+        if (p.AbsY == p.ReqY)
+        {
+            p.ReqY = -1;
+        }
 
         // Combat delays
         if (p.CombatDelay > 0) p.CombatDelay--;
@@ -449,7 +476,11 @@ public class GameEngine : BackgroundService
         if (p.MagicDelay > 0) p.MagicDelay--;
 
         // Freeze
-        if (p.FreezeDelay > 0) p.FreezeDelay--;
+        if (p.FreezeDelay > 0)
+        {
+            p.FreezeDelay--;
+            _walkQueue.StopMovement(p);
+        }
 
         // Skull
         if (p.SkulledDelay > 0)
@@ -520,9 +551,11 @@ public class GameEngine : BackgroundService
         if (p.PrayerDrain <= 0 && p.SkillLvl[5] > 0)
         {
             p.SkillLvl[5]--;
+            p.UpdateReq = true;
             if (p.SkillLvl[5] <= 0)
             {
                 _prayers.Reset(p);
+                p.LastTickMessage = "You have run out of prayer points.";
             }
             p.PrayerDrain = 100;
         }
@@ -552,8 +585,15 @@ public class GameEngine : BackgroundService
             p.ClawTimer--;
             if (p.ClawTimer <= 0 && p.UseClaws)
             {
-                // Apply 3rd and 4th claw hits to target
-                // (target reference would need to be resolved from AttackPlayer/AttackNPC)
+                if (p.AttackPlayer > 0 && p.AttackPlayer < MaxPlayers)
+                {
+                    var target = Players[p.AttackPlayer];
+                    if (target != null && !target.IsDead)
+                    {
+                        target.AppendHit(p.ThirdHit, 0);
+                        target.AppendHit(p.FourthHit, 0);
+                    }
+                }
                 p.UseClaws = false;
             }
         }
@@ -584,7 +624,13 @@ public class GameEngine : BackgroundService
 
         // Disconnection forwarding
         if (p.Disconnected[0])
+        {
+            if (p.TradePlayer > 0)
+            {
+                DeclineTradeForDisconnect(p);
+            }
             p.Disconnected[1] = true;
+        }
 
         // ── Combat dispatch (mirrors Java Player.process() → Engine.playerCombat / playerNPCCombat) ──
         if (p.AttackingPlayer)
@@ -592,6 +638,11 @@ public class GameEngine : BackgroundService
 
         if (p.AttackingNPC)
             PlayerNpcCombat.ProcessAttack(p);
+
+        if (p.AfterDeathUpdateReq)
+        {
+            _deaths.RestoreAfterDeath(p);
+        }
 
         // Level-up detection
         for (int i = 0; i < Player.SkillCount; i++)
@@ -603,6 +654,42 @@ public class GameEngine : BackgroundService
                 p.SkillLvlActual[i] = currentMaxLevel;
                 // Level-up message will be sent by the frame/network layer
             }
+        }
+
+        if (p.RunEnergyUpdateReq)
+        {
+            p.UpdateReq = true;
+            p.RunEnergyUpdateReq = false;
+        }
+
+        if (p.SpecialAmountUpdateReq)
+        {
+            p.UpdateReq = true;
+            p.SpecialAmountUpdateReq = false;
+        }
+
+        if (p.SkulledUpdateReq)
+        {
+            if (p.SkulledDelay >= 1)
+            {
+                p.PkIcon = 0;
+                p.UpdateReq = true;
+                p.AppearanceUpdateReq = true;
+            }
+            if (p.SkulledDelay <= 0)
+            {
+                p.PkIcon = -1;
+                p.SkulledDelay = 0;
+                p.UpdateReq = true;
+                p.AppearanceUpdateReq = true;
+            }
+
+            p.SkulledUpdateReq = false;
+        }
+
+        if (p.ClickDelay == 0)
+        {
+            p.ClickDelay = -1;
         }
     }
 
@@ -643,5 +730,48 @@ public class GameEngine : BackgroundService
             Npcs[index] = null;
             RebuildNpcs();
         }
+    }
+
+    private void DeclineTradeForDisconnect(Player player)
+    {
+        var partner = player.TradePlayer > 0 && player.TradePlayer < Players.Length ? Players[player.TradePlayer] : null;
+        ReturnTradeItems(player);
+        ResetTradeState(player);
+        if (partner is not null)
+        {
+            ReturnTradeItems(partner);
+            ResetTradeState(partner);
+        }
+    }
+
+    private static void ReturnTradeItems(Player player)
+    {
+        for (var i = 0; i < player.TradeItems.Length; i++)
+        {
+            if (player.TradeItems[i] < 0 || player.TradeItemsN[i] <= 0)
+            {
+                continue;
+            }
+
+            var slot = Array.IndexOf(player.Items, -1);
+            if (slot < 0)
+            {
+                break;
+            }
+
+            player.Items[slot] = player.TradeItems[i];
+            player.ItemsN[slot] = player.TradeItemsN[i];
+        }
+    }
+
+    private static void ResetTradeState(Player player)
+    {
+        Array.Fill(player.TradeItems, -1);
+        Array.Fill(player.TradeItemsN, 0);
+        player.TradeAccept[0] = false;
+        player.TradeAccept[1] = false;
+        player.TradePlayer = 0;
+        player.TradeStage = 0;
+        player.InterfaceId = -1;
     }
 }

@@ -42,10 +42,18 @@ public sealed class PlayerBankService(ItemDefinitionLoader itemDefinitions, Play
             Insert(player, GetFreeBankSlot(player), freeBankSlot);
             IncreaseTabStartSlots(player, player.ViewingBankTab);
             player.ViewingBankTab = 10;
+            SendTabConfig(player);
+        }
+
+        if (bankCount + amount < 0)
+        {
+            amount = ItemDefinitionLoader.MaxItemAmount - bankCount;
+            player.LastTickMessage = "Your bank is full";
         }
 
         if (bankCount == 0 && freeBankSlot == -1)
         {
+            player.LastTickMessage = "Not enough space in your bank.";
             return;
         }
 
@@ -61,6 +69,7 @@ public sealed class PlayerBankService(ItemDefinitionLoader itemDefinitions, Play
         }
 
         playerItems.DeleteItem(player, player.Items[inventorySlot], inventorySlot, amount);
+        RefreshBankUi(player);
     }
 
     public void Withdraw(Player player, int bankSlot, int amount)
@@ -82,6 +91,12 @@ public sealed class PlayerBankService(ItemDefinitionLoader itemDefinitions, Play
         var withdrawItemId = player.WithdrawNote && itemDefinitions.CanBeNoted(itemId)
             ? itemDefinitions.FindNote(itemId)
             : itemId;
+        var inventoryCount = playerItems.InvItemCount(player, withdrawItemId);
+        if (inventoryCount + amount < 0)
+        {
+            amount = ItemDefinitionLoader.MaxItemAmount - inventoryCount;
+            player.LastTickMessage = "You can't carry more of that item!";
+        }
 
         if (!itemDefinitions.IsStackable(withdrawItemId))
         {
@@ -92,9 +107,14 @@ public sealed class PlayerBankService(ItemDefinitionLoader itemDefinitions, Play
             }
 
             amount -= remaining;
+            if (remaining > 0)
+            {
+                player.LastTickMessage = "Not enough space in your inventory.";
+            }
         }
         else if (!playerItems.AddItem(player, withdrawItemId, amount))
         {
+            player.LastTickMessage = "Not enough space in your inventory.";
             return;
         }
 
@@ -105,7 +125,10 @@ public sealed class PlayerBankService(ItemDefinitionLoader itemDefinitions, Play
             player.BankItemsN[bankSlot] = 0;
             DecreaseTabStartSlots(player, tabId);
             AlignBank(player);
+            SendTabConfig(player);
         }
+
+        RefreshBankUi(player);
     }
 
     public void AlignBank(Player player)
@@ -218,6 +241,7 @@ public sealed class PlayerBankService(ItemDefinitionLoader itemDefinitions, Play
 
         player.BankItems[toId] = tempItem;
         player.BankItemsN[toId] = tempAmount;
+        RefreshBankUi(player);
     }
 
     public int GetItemsInTab(Player player, int tabId) => player.TabStartSlot[tabId + 1] - player.TabStartSlot[tabId];
@@ -262,12 +286,15 @@ public sealed class PlayerBankService(ItemDefinitionLoader itemDefinitions, Play
         }
 
         player.TabStartSlot[10] -= size;
+        SendTabConfig(player);
         for (var i = 0; i < size; i++)
         {
             var slot = GetFreeBankSlot(player);
             player.BankItems[slot] = tempItems[i];
             player.BankItemsN[slot] = tempAmounts[i];
         }
+
+        RefreshBankUi(player);
     }
 
     public int GetArrayIndex(int tabId) => tabId switch
@@ -295,6 +322,7 @@ public sealed class PlayerBankService(ItemDefinitionLoader itemDefinitions, Play
         {
             (player.BankItems[fromSlot], player.BankItems[toSlot]) = (player.BankItems[toSlot], player.BankItems[fromSlot]);
             (player.BankItemsN[fromSlot], player.BankItemsN[toSlot]) = (player.BankItemsN[toSlot], player.BankItemsN[fromSlot]);
+            RefreshBankUi(player);
             return;
         }
 
@@ -309,6 +337,8 @@ public sealed class PlayerBankService(ItemDefinitionLoader itemDefinitions, Play
         Insert(player, fromSlot, toSlot > fromSlot ? toSlot - 1 : toSlot);
         IncreaseTabStartSlots(player, tabIndex);
         DecreaseTabStartSlots(player, fromTab);
+        SendTabConfig(player);
+        RefreshBankUi(player);
     }
 
     public void MoveToBankTab(Player player, int fromSlot, int tabId)
@@ -332,5 +362,37 @@ public sealed class PlayerBankService(ItemDefinitionLoader itemDefinitions, Play
         Insert(player, fromSlot, toSlot > fromSlot ? toSlot - 1 : toSlot);
         IncreaseTabStartSlots(player, tabIndex);
         DecreaseTabStartSlots(player, fromTab);
+        SendTabConfig(player);
+        RefreshBankUi(player);
+    }
+
+    public void SendTabConfig(Player player)
+    {
+        var config = 0;
+        config += GetItemsInTab(player, 2);
+        config += GetItemsInTab(player, 3) * 1024;
+        config += GetItemsInTab(player, 4) * 1048576;
+        player.BankTabConfig1 = config;
+
+        config = 0;
+        config += GetItemsInTab(player, 5);
+        config += GetItemsInTab(player, 6) * 1024;
+        config += GetItemsInTab(player, 7) * 1048576;
+        player.BankTabConfig2 = config;
+
+        config = -2013265920;
+        config += GetItemsInTab(player, 8);
+        config += GetItemsInTab(player, 9) * 1024;
+        player.BankTabConfig3 = config;
+    }
+
+    public void SetBankX(Player player, int amount)
+    {
+        player.BankX = amount;
+    }
+
+    private void RefreshBankUi(Player player)
+    {
+        player.BankFreeSlotCount = Math.Max(0, GetFreeBankSlot(player));
     }
 }

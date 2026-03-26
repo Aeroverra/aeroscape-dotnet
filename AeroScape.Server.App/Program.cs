@@ -60,6 +60,7 @@ builder.Services.AddSingleton<WalkQueue>();
 builder.Services.AddSingleton<ShopService>();
 builder.Services.AddSingleton<PrayerService>();
 builder.Services.AddSingleton<DeathService>();
+builder.Services.AddSingleton<LegacyFileManager>();
 builder.Services.AddSingleton<MagicService>();
 builder.Services.AddSingleton<ClanChatService>();
 builder.Services.AddSingleton<BountyHunterService>();

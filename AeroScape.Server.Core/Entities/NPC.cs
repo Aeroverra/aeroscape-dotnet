@@ -219,11 +219,69 @@ public class NPC
     /// </summary>
     public void Process()
     {
+        if (FollowPlayer != 0)
+        {
+            if (Owner is not null && (!Owner.Online || Owner.IsDead))
+            {
+                IsDead = true;
+            }
+            else if (Owner is not null)
+            {
+                AppendPlayerFollowing(Owner);
+            }
+        }
+
         if (RespawnDelay > 0 && IsDead)
             RespawnDelay--;
 
         if (CombatDelay > 0)
             CombatDelay--;
+    }
+
+    private void AppendPlayerFollowing(Player player)
+    {
+        if (FollowCounter >= 3)
+        {
+            FollowPlayer = 0;
+            AttackingPlayer = false;
+            AttackPlayer = 0;
+            FollowCounter = 0;
+            RequestFaceCoords(3333, 3333);
+            RequestFaceTo(-1);
+            return;
+        }
+
+        if (!player.AttackingNPC && FollowCounter < 4 && Owner is null)
+        {
+            FollowCounter++;
+        }
+        else
+        {
+            FollowCounter = 0;
+        }
+
+        var playerX = player.AbsX;
+        var playerY = player.AbsY;
+        RequestFaceCoords(playerX, playerY);
+
+        if (AbsX > playerX + 15 || AbsY > playerY + 15 || AbsX < playerX - 15 || AbsY < playerY - 15 || HeightLevel != player.HeightLevel)
+        {
+            AttackingPlayer = false;
+            FollowPlayer = 0;
+            RequestFaceCoords(3333, 3333);
+            RequestFaceTo(-1);
+            return;
+        }
+
+        HeightLevel = player.HeightLevel;
+        MoveX = Math.Sign(playerX - AbsX);
+        MoveY = Math.Sign(playerY - AbsY);
+        if (MoveX != 0 || MoveY != 0)
+        {
+            AbsX += MoveX;
+            AbsY += MoveY;
+            UpdateReq = true;
+        }
     }
 
     /// <summary>

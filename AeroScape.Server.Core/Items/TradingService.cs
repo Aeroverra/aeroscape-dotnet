@@ -1,5 +1,6 @@
 using AeroScape.Server.Core.Engine;
 using AeroScape.Server.Core.Entities;
+using System.Linq;
 
 namespace AeroScape.Server.Core.Items;
 
@@ -43,6 +44,11 @@ public sealed class TradingService(GameEngine engine, PlayerItemsService playerI
                     partner.TradeStage = 2;
                     player.TradeAccept[0] = false;
                     partner.TradeAccept[0] = false;
+                    OpenSecondScreen(player, partner);
+                }
+                else
+                {
+                    RefreshScreens(player, partner);
                 }
                 break;
             case 2:
@@ -50,6 +56,10 @@ public sealed class TradingService(GameEngine engine, PlayerItemsService playerI
                 if (partner.TradeAccept[1])
                 {
                     CompleteTrade(player, partner);
+                }
+                else
+                {
+                    RefreshScreens(player, partner);
                 }
                 break;
         }
@@ -94,6 +104,7 @@ public sealed class TradingService(GameEngine engine, PlayerItemsService playerI
         OfferItem(player, itemId, amount);
         player.TradeAccept[0] = false;
         partner.TradeAccept[0] = false;
+        RefreshScreens(player, partner);
     }
 
     public void RemoveItemByTradeSlot(Player player, int tradeSlot, int amount)
@@ -139,6 +150,7 @@ public sealed class TradingService(GameEngine engine, PlayerItemsService playerI
 
         player.TradeAccept[0] = false;
         partner.TradeAccept[0] = false;
+        RefreshScreens(player, partner);
     }
 
     public void HandleActionButton(Player player, int interfaceId, int packetOpcode, int buttonId, int slotId)
@@ -164,9 +176,21 @@ public sealed class TradingService(GameEngine engine, PlayerItemsService playerI
                 {
                     DeclineTrade(player);
                 }
-                else if (buttonId == 30 && packetOpcode == 233)
+                else if (buttonId == 30)
                 {
-                    RemoveItemByTradeSlot(player, slotId, 1);
+                    var amount = packetOpcode switch
+                    {
+                        233 => 1,
+                        21 => 5,
+                        169 => 10,
+                        214 => slotId >= 0 && slotId < player.TradeItems.Length ? player.TradeItemsN[slotId] : 0,
+                        173 => player.BankX,
+                        _ => 0
+                    };
+                    if (amount > 0)
+                    {
+                        RemoveItemByTradeSlot(player, slotId, amount);
+                    }
                 }
                 break;
             case 336:
@@ -176,6 +200,7 @@ public sealed class TradingService(GameEngine engine, PlayerItemsService playerI
                     21 => 5,
                     169 => 10,
                     214 => slotId >= 0 && slotId < player.Items.Length ? playerItems.InvItemCount(player, player.Items[slotId]) : 0,
+                    173 => player.BankX,
                     _ => 0
                 };
                 if (amount > 0)
@@ -198,6 +223,7 @@ public sealed class TradingService(GameEngine engine, PlayerItemsService playerI
         partner.TradeAccept[1] = false;
         player.InterfaceId = 335;
         partner.InterfaceId = 335;
+        RefreshScreens(player, partner);
     }
 
     private void CompleteTrade(Player player, Player partner)
@@ -241,6 +267,7 @@ public sealed class TradingService(GameEngine engine, PlayerItemsService playerI
             }
 
             player.TradeItemsN[slot] += amount;
+            RefreshScreens(player, GetPartner(player));
             return;
         }
 
@@ -255,6 +282,8 @@ public sealed class TradingService(GameEngine engine, PlayerItemsService playerI
             player.TradeItems[slot] = itemId;
             player.TradeItemsN[slot] = 1;
         }
+
+        RefreshScreens(player, GetPartner(player));
     }
 
     private void ReturnItems(Player player)
@@ -288,6 +317,11 @@ public sealed class TradingService(GameEngine engine, PlayerItemsService playerI
         player.TradePlayer = 0;
         player.TradeStage = 0;
         player.InterfaceId = -1;
+        player.TradeStatusText = string.Empty;
+        player.TradePartnerText = string.Empty;
+        player.TradeFreeSlotText = string.Empty;
+        player.TradeConfirmTextSelf = string.Empty;
+        player.TradeConfirmTextPartner = string.Empty;
     }
 
     private Player? GetPartner(Player player) =>
@@ -317,5 +351,57 @@ public sealed class TradingService(GameEngine engine, PlayerItemsService playerI
         }
 
         return -1;
+    }
+
+    private void OpenSecondScreen(Player player, Player partner)
+    {
+        player.InterfaceId = 334;
+        partner.InterfaceId = 334;
+        RefreshScreens(player, partner);
+    }
+
+    private void RefreshScreens(Player player, Player? partner)
+    {
+        if (partner is null)
+        {
+            return;
+        }
+
+        RefreshFirstScreen(player, partner);
+        RefreshFirstScreen(partner, player);
+        RefreshSecondScreen(player, partner);
+        RefreshSecondScreen(partner, player);
+    }
+
+    private void RefreshFirstScreen(Player player, Player partner)
+    {
+        player.TradePartnerText = $"Trading With: {partner.Username}";
+        player.TradeFreeSlotText = $"{partner.Username} has {playerItems.FreeSlotCount(partner)} free inventory slots.";
+        player.TradeStatusText = player.TradeAccept[0]
+            ? "Waiting for other player..."
+            : partner.TradeAccept[0] ? "The other player has accepted." : string.Empty;
+    }
+
+    private void RefreshSecondScreen(Player player, Player partner)
+    {
+        player.TradeConfirmTextSelf = BuildTradeString(player);
+        player.TradeConfirmTextPartner = BuildTradeString(partner);
+        player.TradeStatusText = player.TradeAccept[1]
+            ? "Waiting for other player..."
+            : partner.TradeAccept[1] ? "The other player has accepted." : "I agree that if I get scammed, I will not get my item returned.";
+    }
+
+    private string BuildTradeString(Player player)
+    {
+        var items = SnapshotTradeItems(player);
+        if (items.Count == 0)
+        {
+            return "Absolutely nothing!";
+        }
+
+        return string.Join("<br>", items.Select(item =>
+            item.Amount > 1
+                ? $"{itemDefinitions.GetItemName(item.ItemId)} x {item.Amount}"
+                : itemDefinitions.GetItemName(item.ItemId)));
     }
 }

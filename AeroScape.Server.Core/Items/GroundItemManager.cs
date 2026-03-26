@@ -27,6 +27,14 @@ public sealed class GroundItemManager(ItemDefinitionLoader itemDefinitions)
             }
 
             groundItem.ItemGroundTime--;
+            if (groundItem.ItemGroundTime == 60)
+            {
+                if (!itemDefinitions.IsUntradable(groundItem.ItemId) && !string.IsNullOrEmpty(groundItem.ItemDroppedBy))
+                {
+                    groundItem.IsGlobal = true;
+                }
+            }
+
             if (groundItem.ItemGroundTime <= 0)
             {
                 _groundItems[i] = null;
@@ -54,6 +62,7 @@ public sealed class GroundItemManager(ItemDefinitionLoader itemDefinitions)
             }
 
             _groundItems[i] = new GroundItemState(i, itemId, amount, x, y, height, owner);
+            _groundItems[i]!.IsGlobal = string.IsNullOrEmpty(owner);
             return true;
         }
 
@@ -98,10 +107,7 @@ public sealed class GroundItemManager(ItemDefinitionLoader itemDefinitions)
             return null;
         }
 
-        if (groundItem.ItemDroppedBy.Length > 0 &&
-            !itemDefinitions.IsUntradable(groundItem.ItemId) &&
-            groundItem.ItemDroppedBy != player.Username &&
-            groundItem.ItemGroundTime > 60)
+        if (!groundItem.CanBeSeenBy(player.Username, itemDefinitions.IsUntradable(groundItem.ItemId)))
         {
             return null;
         }
@@ -128,4 +134,20 @@ public sealed class GroundItemState(int index, int itemId, int itemAmt, int item
     public int ItemHeight { get; } = itemHeight;
     public string ItemDroppedBy { get; } = itemDroppedBy;
     public int ItemGroundTime { get; set; } = 240;
+    public bool IsGlobal { get; set; }
+
+    public bool CanBeSeenBy(string username, bool isUntradable)
+    {
+        if (string.IsNullOrEmpty(ItemDroppedBy))
+        {
+            return true;
+        }
+
+        if (isUntradable)
+        {
+            return ItemDroppedBy == username;
+        }
+
+        return IsGlobal || ItemDroppedBy == username;
+    }
 }
