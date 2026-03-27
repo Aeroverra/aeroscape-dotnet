@@ -106,6 +106,11 @@ public sealed class PrayerService
             return 5;
         if (player.PrayOn[23])
             return 4;
+        
+        // Check praySummon fallback (prayer 24) when no head icon prayers are active
+        if (player.PrayOn[24])
+            return 7;
+        
         return -1;
     }
 }

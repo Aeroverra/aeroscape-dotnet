@@ -7,7 +7,7 @@ namespace AeroScape.Server.Core.Items;
 
 public sealed class ItemDefinitionLoader
 {
-    public const int MaxItemAmount = 999_999_999;
+    public const int MaxItemAmount = 2147483647; // Java Integer.MAX_VALUE
 
     private static readonly HashSet<int> UntradableItems = [6570];
     private readonly Dictionary<int, ItemDefinition> _definitions = [];

@@ -62,7 +62,7 @@ public sealed class ConstructionService
     public bool AddRoom(Player player, int roomId)
     {
         EnsureLoaded(player);
-        if (roomId < 0 || roomId + 1 >= RoomInfo.GetLength(0))
+        if (roomId < 0 || roomId + 1 > RoomInfo.GetLength(0))
             return false;
 
         var requiredLevel = RoomInfo[roomId + 1, 3];

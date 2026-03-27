@@ -1,5 +1,7 @@
 using AeroScape.Server.Core.Entities;
+using AeroScape.Server.Core.Frames;
 using AeroScape.Server.Core.Messages;
+using AeroScape.Server.Network.Frames;
 
 namespace AeroScape.Server.Core.Movement;
 
@@ -12,11 +14,24 @@ public sealed class WalkQueue
     private static readonly sbyte[] DirectionDeltaX = { -1, 0, 1, -1, 1, -1, 0, 1 };
     private static readonly sbyte[] DirectionDeltaY = { 1, 1, 1, 0, 0, -1, -1, -1 };
 
+    private readonly GameFrames _frames;
+
+    public WalkQueue(GameFrames frames)
+    {
+        _frames = frames;
+    }
+
     public void HandleWalk(Player player, WalkMessage message)
     {
         ClearInteractions(player);
+        
+        // Restore interface like Java Walking.java:14 and 45-48
+        Write(player, w => _frames.RemoveShownInterface(w, player));
         player.InterfaceId = -1;
         player.ChatboxInterfaceId = -1;
+        Write(player, w => _frames.RestoreTabs(w, player));
+        Write(player, w => _frames.RestoreInventory(w, player));
+        Write(player, w => _frames.RemoveChatboxInterface(w, player));
 
         ResetWalkingQueue(player);
         player.AutoCasting = false;
@@ -259,5 +274,16 @@ public sealed class WalkQueue
         player.AttackNPC = 0;
         player.FollowingPlayer = false;
         player.FollowPlayerIndex = 0;
+    }
+
+    private static void Write(Player player, Action<FrameWriter> build)
+    {
+        var session = player.Session;
+        if (session is null)
+            return;
+
+        using var w = new FrameWriter(4096);
+        build(w);
+        w.FlushToAsync(session.GetStream(), session.CancellationToken).GetAwaiter().GetResult();
     }
 }

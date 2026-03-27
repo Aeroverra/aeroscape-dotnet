@@ -174,7 +174,6 @@ public sealed class NpcUpdateWriter
         str.WriteByte(maskData);
         if (n.FaceToUpdateReq) str.WriteWord(n.FaceToRequest);
         if (n.SpeakTextUpdateReq) str.WriteString(n.SpeakText);
-        if (n.SpeakTextUpdateReq) str.WriteString(n.SpeakText);
         if (n.AnimUpdateReq)
         {
             str.WriteWordA(n.AnimRequest);

@@ -48,7 +48,7 @@ public sealed class MagicService(PlayerItemsService playerItems)
             26 => CastTeleport(player, buttonId, 2757, 3477, (556, 5), (563, 1)),
             32 => CastTeleport(player, buttonId, 2662, 3305, (555, 2), (563, 2)),
             37 => CastTeleport(player, buttonId, 2545, 3112, (557, 2), (563, 2)),
-            40 => CastBonesSpell(player, 6883, 40, 4, 4, 2),
+            40 => CastBonesSpell(player, 6883, 40, 2, 2, 1),
             44 => CastTeleport(player, buttonId, 2891, 3678, (554, 2), (563, 2)),
             47 => CastTeleport(player, buttonId, 2755, 2784, (554, 2), (563, 2), (555, 2), (1963, 1)),
             58 => CastCharge(player),
@@ -259,12 +259,17 @@ public sealed class MagicService(PlayerItemsService playerItems)
         {
             var coalCount = playerItems.InvItemCount(player, 453);
             // Java: if ((itemID == 440) && hasReq(p, 453, 2)) - requires exactly 2 coal for steel
-            if (coalCount >= 2)
+            if (coalCount == 2)
             {
                 // Return steel bar recipe only if we have exactly 2 coal + 1 iron
                 var ironCount = playerItems.InvItemCount(player, 440);
-                if (ironCount >= 1 && coalCount >= 2)
+                if (ironCount >= 1)
                     return GetSuperheatRecipeByBar(2353); // Steel bar
+            }
+            if (coalCount == 1)
+            {
+                // Player has only 1 coal -> error message (but this needs to be handled by caller)
+                return null; // This will cause spell to fail with appropriate error
             }
             if (coalCount == 0)
                 return GetSuperheatRecipeByBar(2351); // Iron bar (no coal)

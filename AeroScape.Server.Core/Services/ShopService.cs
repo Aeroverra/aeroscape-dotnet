@@ -106,6 +106,11 @@ public sealed class ShopService
         if (!_definitions.TryGetValue(player.ShopId, out var stock))
             return false;
 
+        // Add null checks and array length validation
+        if (player.ShopItems == null || player.ShopItemsN == null || 
+            player.ShopItems.Length != player.ShopItemsN.Length)
+            return false;
+
         int slot = Array.IndexOf(player.ShopItems, itemId);
         if (slot < 0 || slot >= player.ShopItemsN.Length)
             return false;
@@ -141,7 +146,8 @@ public sealed class ShopService
 
     public bool Sell(Player player, int itemId, int amount)
     {
-        if (itemId == 995 && !player.PartyShop)
+        // Allow coins to be sold to general stores (shops 1 and 17) like Java
+        if (itemId == 995 && !player.PartyShop && player.ShopId != 1 && player.ShopId != 17)
             return false;
 
         if (_inventory.Count(player, itemId) < amount)

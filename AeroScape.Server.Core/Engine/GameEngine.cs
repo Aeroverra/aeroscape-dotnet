@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
@@ -329,6 +330,15 @@ public class GameEngine : BackgroundService
                 continue;
             }
 
+            // Tab interface restoration (mirrors Java Engine.java lines 273-278)
+            if (p.InterfaceId != 762 &&
+                p.InterfaceId != 335 &&
+                p.InterfaceId != 334 &&
+                p.InterfaceId != 620)
+            {
+                GameUpdateService?.RestoreTabs(p);
+            }
+
             // Per-player tick (timers, skills, combat delays, death, etc.)
             ProcessPlayerTick(p);
 
@@ -379,13 +389,18 @@ public class GameEngine : BackgroundService
 
             n.Process(Players);
 
+            // NPC-vs-Player combat (mirrors Java: NPC.process() → Engine.npcPlayerCombat.attackPlayer)
+            // Combat should be processed before death state checks to allow final attacks
+            if (n.AttackingPlayer)
+                NpcPlayerCombat.ProcessAttack(n);
+
             if (!n.IsDead)
             {
-                // NPC-vs-Player combat (mirrors Java: NPC.process() → Engine.npcPlayerCombat.attackPlayer)
-                if (n.AttackingPlayer)
-                    NpcPlayerCombat.ProcessAttack(n);
-
-                GameUpdateService?.ProcessNpcMovement(n);
+                // NPC random walk logic (mirrors Java Engine.java lines 326-330)
+                if (n.RandomWalk && !n.AttackingPlayer)
+                {
+                    GameUpdateService?.ProcessNpcRandomWalk(n);
+                }
             }
             else
             {
@@ -399,6 +414,9 @@ public class GameEngine : BackgroundService
     /// </summary>
     private void ProcessGlobalTimers()
     {
+        // Update player count (mirrors Java Engine constPlayers tracking)
+        PlayersInGame = Players.Count(p => p != null && p.Online);
+        
         if (FightPitTimer > 0) FightPitTimer--;
         if (FightPitTimer == 0) FightPitTimer = -1;
         if (FightPitTimer == -1 && PlayersInGame == 0) FightPitTimer = 120;

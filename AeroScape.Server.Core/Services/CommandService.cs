@@ -68,7 +68,9 @@ public sealed class CommandService
                 player.SetCoords(2592, 5285, 0);
                 return true;
             case "house":
-                player.SetCoords(3104, 3926, player.HouseHeight);
+                // Bounds check for house height
+                int safePlayerHouseHeight = Math.Max(0, Math.Min(3, player.HouseHeight));
+                player.SetCoords(3104, 3926, safePlayerHouseHeight);
                 return true;
             case "enter":
                 if (args.Length == 0)
@@ -100,7 +102,9 @@ public sealed class CommandService
                 if (targetPlayer.Username.Equals("abbo", StringComparison.OrdinalIgnoreCase) || 
                     targetPlayer.Username.Equals("mother earth", StringComparison.OrdinalIgnoreCase))
                 {
-                    player.SetCoords(3104, 3926, targetPlayer.HouseHeight); // Using default house coords + offset
+                    // Bounds check for house height to prevent teleport to invalid coordinates
+                    int safeHouseHeight = Math.Max(0, Math.Min(3, targetPlayer.HouseHeight));
+                    player.SetCoords(3104, 3926, safeHouseHeight); // Using default house coords + validated offset
                     _ui.SendMessage(player, $"You enter {targetPlayer.Username}'s house.");
                     _ui.SendMessage(targetPlayer, $"{player.Username} has entered your house.");
                     return true;
@@ -109,14 +113,17 @@ public sealed class CommandService
                 if (targetPlayer.Username.Equals("richman55", StringComparison.OrdinalIgnoreCase) || 
                     targetPlayer.Username.Equals("karaliesa", StringComparison.OrdinalIgnoreCase))
                 {
-                    player.SetCoords(3104, 3926, targetPlayer.HouseHeight); // Using default house coords + offset
+                    // Bounds check for house height to prevent teleport to invalid coordinates
+                    int safeHouseHeight = Math.Max(0, Math.Min(3, targetPlayer.HouseHeight));
+                    player.SetCoords(3104, 3926, safeHouseHeight); // Using default house coords + validated offset
                     _ui.SendMessage(player, $"You enter {targetPlayer.Username}'s house.");
                     _ui.SendMessage(targetPlayer, $"{player.Username} has entered your house.");
                     return true;
                 }
                 
-                // Default house entry logic
-                player.SetCoords(3104, 3926, targetPlayer.HouseHeight);
+                // Default house entry logic - bounds check for house height
+                int safeTargetHouseHeight = Math.Max(0, Math.Min(3, targetPlayer.HouseHeight));
+                player.SetCoords(3104, 3926, safeTargetHouseHeight);
                 _ui.SendMessage(player, $"You enter {targetPlayer.Username}'s house.");
                 _ui.SendMessage(targetPlayer, $"{player.Username} has entered your house.");
                 return true;

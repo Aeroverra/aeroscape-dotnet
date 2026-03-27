@@ -30,7 +30,7 @@ public sealed class PlayerUpdateWriter
             {
                 int relX = p.TeleportToX - (p.MapRegionX - 6) * 8;
                 int relY = p.TeleportToY - (p.MapRegionY - 6) * 8;
-                if (relX >= 16 && relX < 88 && relY >= 16 && relY < 88)
+                if (relX >= 2 * 8 && relX < 11 * 8 && relY >= 2 * 8 && relY < 11 * 8)
                     p.MapRegionDidChange = false;
             }
 
@@ -57,9 +57,25 @@ public sealed class PlayerUpdateWriter
         if (p.IsRunning)
             p.RunDir = GetNextWalkingDirection(p);
 
-        if (p.CurrentX < 16 || p.CurrentX >= 88 || p.CurrentY < 16 || p.CurrentY >= 88)
+        // Match Java PlayerMovement.java:60-69 region change logic
+        if (p.CurrentX < 2 * 8)
         {
             p.MapRegionDidChange = true;
+        }
+        else if (p.CurrentX >= 11 * 8)
+        {
+            p.MapRegionDidChange = true;
+        }
+        if (p.CurrentY < 2 * 8)
+        {
+            p.MapRegionDidChange = true;
+        }
+        else if (p.CurrentY >= 11 * 8)
+        {
+            p.MapRegionDidChange = true;
+        }
+        if (p.MapRegionDidChange)
+        {
             p.TeleportToX = p.AbsX;
             p.TeleportToY = p.AbsY;
         }

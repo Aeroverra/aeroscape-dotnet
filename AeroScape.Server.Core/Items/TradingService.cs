@@ -236,12 +236,10 @@ public sealed class TradingService(GameEngine engine, PlayerItemsService playerI
         if (!CanReceiveTradeItems(player, partnerItemsSnapshot) || 
             !CanReceiveTradeItems(partner, playerItemsSnapshot))
         {
-            // Not enough inventory space - abort trade and restore items
-            RestoreTradeItems(player);
-            RestoreTradeItems(partner);
+            // Not enough inventory space - abort trade without duplication
             player.LastTickMessage = "Not enough inventory space to complete trade.";
             partner.LastTickMessage = "Not enough inventory space to complete trade.";
-            DeclineTrade(player);
+            DeclineTrade(player); // This will safely return items via ReturnItems()
             return;
         }
 

@@ -145,12 +145,19 @@ public sealed class PlayerEquipmentService(ItemDefinitionLoader items, PlayerIte
         CheckSpecials(player);
         RecalculateBonuses(player);
         
-        // Check for ancient staff magic interface switch like Java Equipment.java:258
+        // Check for ancient staff magic interface switch like Java Equipment.java:167-175
         if (targetSlot == 3 && itemId == 4675) // Ancient staff equipped in weapon slot
         {
             player.IsAncients = 1;
-            // Send magic interface update like Java
-            Write(player, w => frames.SetInterface(w, 1, 746, 93, 193));
+            // Send magic interface update based on HD client like Java
+            if (player.UsingHD)
+            {
+                Write(player, w => frames.SetInterface(w, 1, 746, 93, 193)); // HD Ancients tab
+            }
+            else
+            {
+                Write(player, w => frames.SetInterface(w, 1, 548, 79, 193)); // Non-HD Ancients tab
+            }
         }
         else if (targetSlot == 3 && itemId != 4675) // Other weapon equipped, reset ancients
         {
