@@ -511,11 +511,35 @@ public sealed class GameFrames
         {
             if (valstring[i] == 's')
             {
-                w.WriteString((string)args[j]);
+                // Type safety check for string arguments
+                if (args[j] is string stringArg)
+                {
+                    w.WriteString(stringArg);
+                }
+                else
+                {
+                    throw new InvalidCastException($"Expected string argument at position {j}, but got {args[j]?.GetType()?.Name ?? "null"}");
+                }
             }
             else
             {
-                w.WriteDWord((int)args[j]);
+                // Type safety check for integer arguments
+                if (args[j] is int intArg)
+                {
+                    w.WriteDWord(intArg);
+                }
+                else if (args[j] is byte byteArg)
+                {
+                    w.WriteDWord(byteArg);
+                }
+                else if (args[j] is short shortArg)
+                {
+                    w.WriteDWord(shortArg);
+                }
+                else
+                {
+                    throw new InvalidCastException($"Expected integer argument at position {j}, but got {args[j]?.GetType()?.Name ?? "null"}");
+                }
             }
             j++;
         }

@@ -28,8 +28,11 @@ public sealed class PlayerUpdateWriter
             p.MapRegionDidChange = true;
             if (p.MapRegionX != -1 && p.MapRegionY != -1)
             {
-                int relX = p.TeleportToX - (p.MapRegionX - 6) * 8;
-                int relY = p.TeleportToY - (p.MapRegionY - 6) * 8;
+                // Prevent coordinate underflow by ensuring regions are at least 6
+                int safeMapRegionX = Math.Max(6, p.MapRegionX);
+                int safeMapRegionY = Math.Max(6, p.MapRegionY);
+                int relX = p.TeleportToX - (safeMapRegionX - 6) * 8;
+                int relY = p.TeleportToY - (safeMapRegionY - 6) * 8;
                 if (relX >= 2 * 8 && relX < 11 * 8 && relY >= 2 * 8 && relY < 11 * 8)
                     p.MapRegionDidChange = false;
             }
@@ -40,8 +43,12 @@ public sealed class PlayerUpdateWriter
                 p.MapRegionY = p.TeleportToY >> 3;
             }
 
-            p.CurrentX = p.TeleportToX - 8 * (p.MapRegionX - 6);
-            p.CurrentY = p.TeleportToY - 8 * (p.MapRegionY - 6);
+            // Prevent coordinate underflow by ensuring regions are at least 6
+            int safeMapRegionX = Math.Max(6, p.MapRegionX);
+            int safeMapRegionY = Math.Max(6, p.MapRegionY);
+
+            p.CurrentX = p.TeleportToX - 8 * (safeMapRegionX - 6);
+            p.CurrentY = p.TeleportToY - 8 * (safeMapRegionY - 6);
             p.AbsX = p.TeleportToX;
             p.AbsY = p.TeleportToY;
             ResetWalkingQueue(p);
@@ -294,9 +301,13 @@ public sealed class PlayerUpdateWriter
         if (p.MapRegionX / 8 == 48 && p.MapRegionY / 8 == 148)
             forceSend = false;
 
-        for (int xCalc = (p.MapRegionX - 6) / 8; xCalc <= (p.MapRegionX + 6) / 8; xCalc++)
+        // Prevent coordinate underflow by ensuring regions are at least 6
+        int safeMapRegionX = Math.Max(6, p.MapRegionX);
+        int safeMapRegionY = Math.Max(6, p.MapRegionY);
+        
+        for (int xCalc = (safeMapRegionX - 6) / 8; xCalc <= (safeMapRegionX + 6) / 8; xCalc++)
         {
-            for (int yCalc = (p.MapRegionY - 6) / 8; yCalc <= (p.MapRegionY + 6) / 8; yCalc++)
+            for (int yCalc = (safeMapRegionY - 6) / 8; yCalc <= (safeMapRegionY + 6) / 8; yCalc++)
             {
                 int region = yCalc + (xCalc << 8);
                 if (forceSend ||
@@ -435,6 +446,13 @@ public sealed class PlayerUpdateWriter
         byte[] chatBuf = new byte[256];
         chatBuf[0] = (byte)plain.Length;
         int encodedLength = ChatCodec.EncryptPlayerChat(chatBuf, 0, 1, plain.Length, plain);
+        
+        // Ensure encoded length doesn't exceed buffer capacity
+        if (encodedLength > 255) // 255 because we need 1 byte for length
+        {
+            encodedLength = 255;
+        }
+        
         int totalLength = 1 + encodedLength;
         str.WriteByteC(totalLength);
         str.WriteBytes(chatBuf, totalLength, 0);
@@ -734,26 +752,46 @@ internal static class ChatCodec
             bitPos += bitCount;
             int endByte = ((remaining + bitCount - 1) >> 3) + bytePos;
             remaining += 24;
+            
+            // Bounds check to prevent buffer overflow
+            if (bytePos >= output.Length) return bytePos - outputOffset;
+            
             output[bytePos] = (byte)(carry |= packed >> remaining);
             if (endByte > bytePos)
             {
                 bytePos++;
                 remaining -= 8;
+                
+                // Bounds check to prevent buffer overflow
+                if (bytePos >= output.Length) return bytePos - outputOffset;
+                
                 output[bytePos] = (byte)(carry = packed >> remaining);
                 if (endByte > bytePos)
                 {
                     bytePos++;
                     remaining -= 8;
+                    
+                    // Bounds check to prevent buffer overflow
+                    if (bytePos >= output.Length) return bytePos - outputOffset;
+                    
                     output[bytePos] = (byte)(carry = packed >> remaining);
                     if (endByte > bytePos)
                     {
                         remaining -= 8;
                         bytePos++;
+                        
+                        // Bounds check to prevent buffer overflow
+                        if (bytePos >= output.Length) return bytePos - outputOffset;
+                        
                         output[bytePos] = (byte)(carry = packed >> remaining);
                         if (bytePos < endByte)
                         {
                             remaining -= 8;
                             bytePos++;
+                            
+                            // Bounds check to prevent buffer overflow
+                            if (bytePos >= output.Length) return bytePos - outputOffset;
+                            
                             output[bytePos] = (byte)(carry = packed << -remaining);
                         }
                     }

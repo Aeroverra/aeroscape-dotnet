@@ -417,12 +417,11 @@ public class GameEngine : BackgroundService
         // Update player count (mirrors Java Engine constPlayers tracking)
         // Thread-safe player count with proper synchronization
         int count = 0;
-        var playersSnapshot = Players; // Get local reference
-        lock (playersSnapshot) // Synchronize access to prevent race conditions
+        lock (Players) // Lock the actual array to prevent race conditions
         {
-            for (int i = 1; i < playersSnapshot.Length; i++)
+            for (int i = 1; i < Players.Length; i++)
             {
-                var p = playersSnapshot[i];
+                var p = Players[i];
                 if (p != null && p.Online)
                     count++;
             }
@@ -901,7 +900,7 @@ public class GameEngine : BackgroundService
             return true; // NPC no longer exists, clear the pending option
 
         // Check if player is adjacent to the NPC
-        if (CombatFormulas.GetDistance(player.AbsX, player.AbsY, player.ClickX, player.ClickY) <= 1)
+        if (CombatFormulas.GetDistance(player.AbsX, player.AbsY, npc.AbsX, npc.AbsY) <= 1)
         {
             // Player is in range, trigger the deferred action using the interaction service
             switch (optionNumber)

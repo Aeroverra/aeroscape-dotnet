@@ -197,9 +197,14 @@ public sealed class WalkQueue
 
     public void AddStepToWalkingQueue(Player player, int x, int y)
     {
-        // Validate bounds before any array access
-        if (player.WQueueWritePtr >= player.WalkingQueueSize || 
-            player.WQueueWritePtr < 0 ||
+        // Validate arrays are initialized
+        if (player.WalkingQueueX == null || player.WalkingQueueY == null || player.WalkingQueue == null)
+        {
+            return;
+        }
+
+        // Validate bounds before any array access - use actual array lengths instead of WalkingQueueSize
+        if (player.WQueueWritePtr < 0 ||
             player.WQueueWritePtr >= player.WalkingQueueX.Length ||
             player.WQueueWritePtr >= player.WalkingQueueY.Length ||
             player.WQueueWritePtr >= player.WalkingQueue.Length)
@@ -295,13 +300,13 @@ public sealed class WalkQueue
         if (session is null)
             return;
 
-        using var w = new FrameWriter(4096);
-        build(w);
         // Use fire-and-forget async to avoid blocking the game thread
         _ = Task.Run(async () =>
         {
             try
             {
+                using var w = new FrameWriter(4096);
+                build(w);
                 await w.FlushToAsync(session.GetStream(), session.CancellationToken);
             }
             catch
