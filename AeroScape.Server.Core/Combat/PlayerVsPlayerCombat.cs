@@ -74,6 +74,13 @@ public class PlayerVsPlayerCombat
         attacker.FollowingPlayer = true;
 
         // ── Determine combat type and execute ──────────────────────────────
+        // Check equipment bounds before accessing weapon slot
+        if (CombatConstants.SlotWeapon >= attacker.Equipment.Length)
+        {
+            ResetAttack(attacker);
+            return;
+        }
+        
         int weaponId = attacker.Equipment[CombatConstants.SlotWeapon];
         int distance = CombatFormulas.GetDistance(attacker.AbsX, attacker.AbsY,
             target.AbsX, target.AbsY);
@@ -197,10 +204,10 @@ public class PlayerVsPlayerCombat
         }
 
         // ── Fire ranged attack ─────────────────────────────────────────────
-        int maxHit = CombatFormulas.MaxMeleeHit(
-            attacker.SkillLvl[CombatConstants.SkillStrength],
-            attacker.EquipmentBonus[CombatConstants.BonusStrength]);
-        int hitDamage = CombatFormulas.Random(maxHit);
+        // Use ranged level for ranged damage, not strength (Java: p.skillLvl[4] / 4)
+        int rangedLevel = attacker.SkillLvl[CombatConstants.SkillRanged];
+        int hitDamage = rangedLevel < 15 ? 1 : rangedLevel / 4;
+        hitDamage = CombatFormulas.Random(hitDamage);
 
         attacker.RequestAnim(attacker.AttackEmote, 0);
         attacker.RequestGfx(WeaponData.GetArrowDrawGfx(ammoId), 100);
@@ -236,9 +243,8 @@ public class PlayerVsPlayerCombat
         attacker.CombatDelay = attacker.AttackDelay;
         attacker.RequestFaceTo(target.PlayerId + 32768);
 
-        int maxHit = CombatFormulas.MaxMeleeHit(
-            attacker.SkillLvl[CombatConstants.SkillStrength],
-            attacker.EquipmentBonus[CombatConstants.BonusStrength]);
+        // Crystal bow uses Misc.random(30) in Java
+        int maxHit = 30;
         target.AppendHit(CombatFormulas.Random(maxHit), 0);
         target.RequestAnim(424, 0);
         target.FreezeDelay = 10;

@@ -132,9 +132,11 @@ public class MiningSkill : GatheringSkillBase
         // Grant ore
         AddItem(_currentRock.OreItemId);
 
-        // Grant XP: Java formula is (BaseXp * miningLevel / 3) / 3
+        // Grant XP: Java formula is (BaseXp * miningLevel / 3) / 3 = BaseXp * miningLevel / 9, but divide by 3 not 9
+        // Java: giveMiningXP((getXpForOre(rockid) * p.skillLvl[14]) / 3) then p.addSkillXP(xp / 3, 14)
+        // Final divisor should be 3, not 9
         int miningLevel = _player.SkillLvl[SkillConstants.Mining];
-        double xp = (_currentRock.BaseXp * miningLevel) / 9.0;
+        double xp = (_currentRock.BaseXp * miningLevel) / 3.0;
         _player.AddSkillXP(xp, SkillConstants.Mining);
 
         // TODO: p.frames.sendMessage(p, "You get some ore.");

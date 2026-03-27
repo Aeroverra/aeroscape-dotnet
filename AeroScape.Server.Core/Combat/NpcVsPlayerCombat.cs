@@ -44,7 +44,8 @@ public class NpcVsPlayerCombat
         int offsetX = (npc.AbsX - target.AbsX) * -1;
         int offsetY = (npc.AbsY - target.AbsY) * -1;
 
-        if (offsetX < -2 || offsetX > 2 || offsetY < -2 || offsetY > 2)
+        // Java uses -3 to 3 range: !(offsetX > -3 && offsetX < 3) || !(offsetY > -3 && offsetY < 3)
+        if (offsetX < -3 || offsetX > 3 || offsetY < -3 || offsetY > 3)
         {
             ResetAttack(npc);
             return;

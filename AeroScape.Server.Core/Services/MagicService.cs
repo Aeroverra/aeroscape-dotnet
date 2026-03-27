@@ -91,6 +91,10 @@ public sealed class MagicService(PlayerItemsService playerItems)
 
     public bool TryConsumeCombatRunes(Player player, SpellDefinition spell)
     {
+        // Validate spell definition exists to prevent null reference exceptions
+        if (spell == null || spell.RuneRequirements == null)
+            return false;
+            
         if (!HasRunes(player, spell.RuneRequirements.Select(r => (r.RuneId, r.Amount)).ToArray()))
             return false;
 
@@ -226,15 +230,16 @@ public sealed class MagicService(PlayerItemsService playerItems)
     private readonly record struct SuperheatRecipe(int OreItemId, int BarItemId, int SmithLevel, params (int ItemId, int Amount)[] Requirements);
     private static readonly SuperheatRecipe[] SuperheatRecipes =
     [
-        new(436, 2349, 1, (436, 1), (438, 1)),
-        new(438, 2349, 1, (436, 1), (438, 1)),
-        new(440, 2351, 15, (440, 1)),
-        new(447, 2359, 50, (447, 1), (453, 4)),
-        new(449, 2361, 70, (449, 1), (453, 6)),
-        new(451, 2363, 85, (451, 1), (453, 8)),
-        new(668, 9467, 8, (668, 1)),
-        new(442, 2355, 20, (442, 1)),
-        new(444, 2357, 40, (444, 1)),
+        new(436, 2349, 1, (436, 1), (438, 1)),  // Bronze: copper + tin
+        new(438, 2349, 1, (436, 1), (438, 1)),  // Bronze: tin + copper
+        new(440, 2351, 15, (440, 1)),           // Iron: iron ore only
+        new(440, 2353, 30, (440, 1), (453, 2)), // Steel: iron ore + 2 coal
+        new(447, 2359, 50, (447, 1), (453, 4)), // Mithril
+        new(449, 2361, 70, (449, 1), (453, 6)), // Adamant
+        new(451, 2363, 85, (451, 1), (453, 8)), // Rune
+        new(668, 9467, 8, (668, 1)),            // Elemental
+        new(442, 2355, 20, (442, 1)),           // Silver
+        new(444, 2357, 40, (444, 1)),           // Gold
     ];
 
     private sealed record EnchantDefinition(int LevelRequired, double Xp, (int ItemId, int Amount)[] Runes, Dictionary<int, int> Transforms);
@@ -250,13 +255,19 @@ public sealed class MagicService(PlayerItemsService playerItems)
 
     private SuperheatRecipe? FindSuperheatRecipe(Player player, int oreItemId)
     {
-        if (oreItemId == 440)
+        if (oreItemId == 440) // Iron ore
         {
             var coalCount = playerItems.InvItemCount(player, 453);
+            // Java: if ((itemID == 440) && hasReq(p, 453, 2)) - requires exactly 2 coal for steel
             if (coalCount >= 2)
-                return GetSuperheatRecipeByBar(2353);
+            {
+                // Return steel bar recipe only if we have exactly 2 coal + 1 iron
+                var ironCount = playerItems.InvItemCount(player, 440);
+                if (ironCount >= 1 && coalCount >= 2)
+                    return GetSuperheatRecipeByBar(2353); // Steel bar
+            }
             if (coalCount == 0)
-                return GetSuperheatRecipeByBar(2351);
+                return GetSuperheatRecipeByBar(2351); // Iron bar (no coal)
             return null;
         }
 

@@ -64,14 +64,16 @@ public class PlayerVsNpcCombat
         int weaponId = attacker.Equipment[CombatConstants.SlotWeapon];
         int distance = CombatFormulas.GetDistance(npc.AbsX, npc.AbsY, attacker.AbsX, attacker.AbsY);
 
-        // Autocast magic takes priority
+        // Autocast magic takes priority (Java: if (p.magicNPC.autoCasting))
+        // Reset autocasting if no autocast staff equipped
         if (attacker.AutoCasting && !MagicNpcService.HasAutocastStaff(attacker))
         {
             attacker.AutoCasting = false;
             attacker.AutoCastSpellId = -1;
         }
 
-        if (attacker.AutoCastSpellId > 0)
+        // Use Java logic: check autoCasting flag AND verify autocast-compatible staff
+        if (attacker.AutoCasting && MagicNpcService.HasAutocastStaff(attacker))
         {
             ProcessMagicAttack(attacker, npc, attacker.AutoCastSpellId);
         }
