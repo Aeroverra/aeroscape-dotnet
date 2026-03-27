@@ -877,12 +877,32 @@ public sealed class ObjectExamineDecoder : IPacketDecoder
 public sealed class TradeAcceptDecoder : IPacketDecoder
 {
     public Type MessageType => typeof(TradeAcceptMessage);
+    
+    // Protocol constants for trade partner ID calculation
+    private const int TRADE_ID_BASE = 33024;
+    private const int TRADE_ID_DIVISOR = 256;
 
     public object? Decode(PlayerSession session, int opcode, ReadOnlySequence<byte> payload)
     {
         var r = new RsReader(payload);
         int raw = r.ReadUnsignedWord();
-        int partnerId = (raw - 33024) / 256 + 1;
+        
+        // Validate raw value to prevent invalid calculations
+        if (raw < TRADE_ID_BASE)
+        {
+            session.Logger?.LogWarning($"TradeAccept: Invalid raw value {raw} (less than base {TRADE_ID_BASE})");
+            return null;
+        }
+        
+        int partnerId = (raw - TRADE_ID_BASE) / TRADE_ID_DIVISOR + 1;
+        
+        // Validate calculated partner ID is within reasonable bounds
+        if (partnerId < 1 || partnerId > 2047) // Max player index in RS
+        {
+            session.Logger?.LogWarning($"TradeAccept: Invalid partner ID {partnerId} calculated from raw value {raw}");
+            return null;
+        }
+        
         return new TradeAcceptMessage(partnerId);
     }
 }
