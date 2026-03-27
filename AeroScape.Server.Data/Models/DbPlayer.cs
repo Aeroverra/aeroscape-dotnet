@@ -75,7 +75,7 @@ public class DbPlayer
 
     // ── Clan ────────────────────────────────────────────────────────────────
     [MaxLength(12)]
-    public string ClanName { get; set; } = string.Empty;
+    public string OwnClanName { get; set; } = string.Empty;
 
     // ── Appearance (7 look slots, 5 colour slots) ───────────────────────────
     [MaxLength(128)]

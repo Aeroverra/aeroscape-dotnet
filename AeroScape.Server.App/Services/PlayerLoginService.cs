@@ -127,7 +127,7 @@ public sealed class PlayerLoginService : IPlayerLoginService
             ConstructionRoomsData = db.ConstructionRoomsData,
             ConstructionFurnitureData = db.ConstructionFurnitureData,
             FamiliarType = db.FamiliarType,
-            ClanName = db.ClanName,
+            OwnClanName = db.OwnClanName,
         };
 
         p.InitDefaults();

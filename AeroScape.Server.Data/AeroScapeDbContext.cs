@@ -15,6 +15,8 @@ public class AeroScapeDbContext : DbContext
     public DbSet<DbEquipment> Equipment => Set<DbEquipment>();
     public DbSet<DbFriend> Friends => Set<DbFriend>();
     public DbSet<DbGrandExchangeOffer> GrandExchangeOffers => Set<DbGrandExchangeOffer>();
+    public DbSet<DbClanChannel> ClanChannels => Set<DbClanChannel>();
+    public DbSet<DbClanRank> ClanRanks => Set<DbClanRank>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -83,6 +85,22 @@ public class AeroScapeDbContext : DbContext
             entity.HasOne(g => g.Player)
                   .WithMany(p => p.GrandExchangeOffers)
                   .HasForeignKey(g => g.PlayerId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Clan Channels — unique owner
+        modelBuilder.Entity<DbClanChannel>(entity =>
+        {
+            entity.HasIndex(c => c.Owner).IsUnique();
+        });
+
+        // Clan Ranks — composite uniqueness (one rank per player per clan)
+        modelBuilder.Entity<DbClanRank>(entity =>
+        {
+            entity.HasIndex(r => new { r.ClanChannelId, r.PlayerName }).IsUnique();
+            entity.HasOne(r => r.ClanChannel)
+                  .WithMany(c => c.Ranks)
+                  .HasForeignKey(r => r.ClanChannelId)
                   .OnDelete(DeleteBehavior.Cascade);
         });
     }

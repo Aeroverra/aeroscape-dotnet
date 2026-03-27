@@ -64,6 +64,7 @@ builder.Services.AddSingleton<LegacyFileManager>();
 builder.Services.AddSingleton<MagicService>();
 builder.Services.AddSingleton<IClientUiService, ClientUiService>();
 builder.Services.AddSingleton<ClanChatService>();
+builder.Services.AddSingleton<IClanChatPersistenceService, ClanChatPersistenceService>();
 builder.Services.AddSingleton<BountyHunterService>();
 builder.Services.AddSingleton<ConstructionService>();
 builder.Services.AddSingleton<CastleWarsService>();
@@ -71,6 +72,7 @@ builder.Services.AddSingleton<DialogueService>();
 builder.Services.AddSingleton<ObjectInteractionService>();
 builder.Services.AddSingleton<ObjectLoaderService>();
 builder.Services.AddSingleton<CommandService>();
+builder.Services.AddSingleton<NPCInteractionService>();
 builder.Services.AddSingleton<NpcSpawnLoader>();
 builder.Services.AddSingleton<GameEngine>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<GameEngine>());
@@ -161,5 +163,9 @@ using (var scope = host.Services.CreateScope())
 var mapDataService = host.Services.GetRequiredService<MapDataService>();
 var mapDataPath = Path.Combine(AppContext.BaseDirectory, "Data", "mapdata", "1.dat");
 mapDataService.LoadRegions(mapDataPath);
+
+// Load clan channels from database
+var clanPersistence = host.Services.GetRequiredService<IClanChatPersistenceService>();
+await clanPersistence.LoadAllChannelsAsync();
 
 host.Run();

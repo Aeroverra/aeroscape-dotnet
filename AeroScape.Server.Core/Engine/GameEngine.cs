@@ -11,6 +11,7 @@ using AeroScape.Server.Core.Entities;
 using AeroScape.Server.Core.Items;
 using AeroScape.Server.Core.Movement;
 using AeroScape.Server.Core.Services;
+using AeroScape.Server.Core.Messages;
 
 namespace AeroScape.Server.Core.Engine;
 
@@ -74,6 +75,7 @@ public class GameEngine : BackgroundService
     private readonly NpcSpawnLoader _npcSpawnLoader;
     private readonly ObjectLoaderService _objectLoader;
     private readonly GroundItemManager _groundItems;
+    private readonly NPCInteractionService _npcInteractionService;
     private bool _worldLoaded;
 
     // ── Combat services ─────────────────────────────────────────────────────
@@ -94,7 +96,8 @@ public class GameEngine : BackgroundService
         NpcSpawnLoader npcSpawnLoader,
         ObjectLoaderService objectLoader,
         GroundItemManager groundItems,
-        PlayerItemsService playerItems)
+        PlayerItemsService playerItems,
+        NPCInteractionService npcInteractionService)
     {
         _logger = logger;
         _walkQueue = walkQueue;
@@ -105,6 +108,7 @@ public class GameEngine : BackgroundService
         _npcSpawnLoader = npcSpawnLoader;
         _objectLoader = objectLoader;
         _groundItems = groundItems;
+        _npcInteractionService = npcInteractionService;
         PlayerCombat = new PlayerVsPlayerCombat(this, pvpLogger);
         PlayerNpcCombat = new PlayerVsNpcCombat(this, pveLogger, playerItems);
         NpcPlayerCombat = new NpcVsPlayerCombat(this, npcLogger);
@@ -513,6 +517,9 @@ public class GameEngine : BackgroundService
             _walkQueue.StopMovement(p);
         }
 
+        // Process deferred NPC interactions
+        ProcessDeferredNpcOptions(p);
+
         // Skull
         if (p.SkulledDelay > 0)
         {
@@ -817,5 +824,64 @@ public class GameEngine : BackgroundService
         player.TradePlayer = 0;
         player.TradeStage = 0;
         player.InterfaceId = -1;
+    }
+
+    /// <summary>
+    /// Processes deferred NPC option interactions.
+    /// When a player has a pending NPC option and walks into range, trigger the deferred action.
+    /// This matches the Java pattern where npcOption1/2/3 flags keep the action pending until adjacency.
+    /// </summary>
+    private void ProcessDeferredNpcOptions(Player player)
+    {
+        // Check for pending NPC options and process them if the player is now in range
+        if (player.NpcOption1 && ProcessDeferredNpcOption(player, 1))
+        {
+            player.NpcOption1 = false;
+        }
+        
+        if (player.NpcOption2 && ProcessDeferredNpcOption(player, 2))
+        {
+            player.NpcOption2 = false;
+        }
+        
+        if (player.NpcOption3 && ProcessDeferredNpcOption(player, 3))
+        {
+            player.NpcOption3 = false;
+        }
+    }
+
+    /// <summary>
+    /// Processes a specific deferred NPC option if the player is in range.
+    /// Returns true if the option was processed (and should be cleared).
+    /// </summary>
+    private bool ProcessDeferredNpcOption(Player player, int optionNumber)
+    {
+        if (player.ClickId <= 0 || player.ClickId >= Npcs.Length)
+            return true; // Invalid NPC, clear the pending option
+
+        var npc = Npcs[player.ClickId];
+        if (npc is null)
+            return true; // NPC no longer exists, clear the pending option
+
+        // Check if player is adjacent to the NPC
+        if (CombatFormulas.GetDistance(player.AbsX, player.AbsY, player.ClickX, player.ClickY) <= 1)
+        {
+            // Player is in range, trigger the deferred action using the interaction service
+            switch (optionNumber)
+            {
+                case 1:
+                    _npcInteractionService.HandleNPCOption1(player, npc);
+                    break;
+                case 2:
+                    _npcInteractionService.HandleNPCOption2(player, npc);
+                    break;
+                case 3:
+                    _npcInteractionService.HandleNPCOption3(player, npc);
+                    break;
+            }
+            return true; // Processed, clear the pending option
+        }
+
+        return false; // Not in range yet, keep the option pending
     }
 }

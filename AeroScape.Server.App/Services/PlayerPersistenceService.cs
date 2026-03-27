@@ -104,7 +104,7 @@ public sealed class PlayerPersistenceService : BackgroundService, IPlayerPersist
         dbPlayer.ConstructionRoomsData = player.ConstructionRoomsData;
         dbPlayer.ConstructionFurnitureData = player.ConstructionFurnitureData;
         dbPlayer.FamiliarType = player.FamiliarType;
-        dbPlayer.ClanName = player.ClanName;
+        dbPlayer.OwnClanName = player.OwnClanName;
         dbPlayer.PasswordHash = string.IsNullOrWhiteSpace(player.PasswordHash) ? dbPlayer.PasswordHash : player.PasswordHash;
         dbPlayer.LookData = string.Join(',', player.Look);
         dbPlayer.ColourData = string.Join(',', player.Colour);

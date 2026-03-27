@@ -312,7 +312,10 @@ public class Player
     // ── Clan ────────────────────────────────────────────────────────────────
     public int ClanChat { get; set; }
     public int ClanChannel { get; set; }
-    public string ClanName { get; set; } = string.Empty;
+    /// <summary>The player's own clan channel name (for their owned clan).</summary>
+    public string OwnClanName { get; set; } = string.Empty;
+    /// <summary>The name of the clan channel they're currently visiting/talking in.</summary>
+    public string VisitingClanName { get; set; } = string.Empty;
 
     // ── Minigame timers (Fight Pits, Castle Wars, etc.) ─────────────────────
     public int WaveId { get; set; } = 1;

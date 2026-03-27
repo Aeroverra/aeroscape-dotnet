@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using AeroScape.Server.Core.Engine;
 using AeroScape.Server.Core.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace AeroScape.Server.Core.Services;
 
@@ -9,12 +10,16 @@ public sealed class ClanChatService
 {
     private readonly GameEngine _engine;
     private readonly IClientUiService _ui;
+    private readonly IClanChatPersistenceService? _persistence;
+    private readonly ILogger<ClanChatService> _logger;
     private readonly ConcurrentDictionary<string, ClanChannel> _channels = new(StringComparer.OrdinalIgnoreCase);
 
-    public ClanChatService(GameEngine engine, IClientUiService ui)
+    public ClanChatService(GameEngine engine, IClientUiService ui, IClanChatPersistenceService? persistence, ILogger<ClanChatService> logger)
     {
         _engine = engine;
         _ui = ui;
+        _persistence = persistence;
+        _logger = logger;
     }
 
     public void CreateOrRenameChat(Player owner, string clanName)
@@ -28,8 +33,24 @@ public sealed class ClanChatService
                 return existing;
             });
 
-        owner.ClanName = channel.ClanName;
+        owner.OwnClanName = channel.ClanName;
         _ui.SendMessage(owner, $"You changed the name of your clan to: {channel.ClanName}");
+
+        // Persist the change
+        if (_persistence != null)
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await _persistence.SaveChannelAsync(owner.Username, channel);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to persist clan channel for {Owner}", owner.Username);
+                }
+            });
+        }
     }
 
     public bool JoinChat(Player player, string ownerName)
@@ -43,14 +64,14 @@ public sealed class ClanChatService
             if (owner is null)
                 return false;
 
-            channel = _channels.GetOrAdd(owner.Username, _ => new ClanChannel(owner.Username, string.IsNullOrWhiteSpace(owner.ClanName) ? owner.Username : owner.ClanName));
+            channel = _channels.GetOrAdd(owner.Username, _ => new ClanChannel(owner.Username, string.IsNullOrWhiteSpace(owner.OwnClanName) ? owner.Username : owner.OwnClanName));
         }
 
         if (string.IsNullOrWhiteSpace(channel.ClanName) || channel.JoinRequirement > GetRank(channel, player.Username))
             return false;
 
         channel.Members[player.Username] = new ClanMember(player.Username);
-        player.ClanName = channel.ClanName;
+        player.VisitingClanName = channel.ClanName;
         player.ClanChannel = 1;
         _ui.SendMessage(player, $"You are now talking in: {channel.ClanName}");
         return true;
@@ -61,6 +82,7 @@ public sealed class ClanChatService
         foreach (var channel in _channels.Values)
             channel.Members.TryRemove(player.Username, out _);
 
+        player.VisitingClanName = string.Empty;
         player.ClanChannel = 0;
         _ui.ResetClanChatList(player);
     }
@@ -95,6 +117,22 @@ public sealed class ClanChatService
             return;
 
         channel.Ranks[name] = rank;
+
+        // Persist the change
+        if (_persistence != null)
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await _persistence.SaveChannelAsync(owner.Username, channel);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to persist clan rank change for {Owner}", owner.Username);
+                }
+            });
+        }
     }
 
     public bool Kick(Player owner, string name)
@@ -109,6 +147,7 @@ public sealed class ClanChatService
         var target = id > 0 ? _engine.Players[id] : null;
         if (target is not null)
         {
+            target.VisitingClanName = string.Empty;
             target.ClanChannel = 0;
             _ui.SendMessage(target, "You've been kick from the chat.");
             _ui.ResetClanChatList(target);
@@ -134,6 +173,22 @@ public sealed class ClanChatService
                 channel.KickRequirement = value;
                 break;
         }
+
+        // Persist the change
+        if (_persistence != null)
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await _persistence.SaveChannelAsync(owner.Username, channel);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to persist clan requirement change for {Owner}", owner.Username);
+                }
+            });
+        }
     }
 
     public void SetLootShare(Player player, bool enabled)
@@ -141,6 +196,11 @@ public sealed class ClanChatService
         var channel = FindPlayersChannel(player);
         if (channel is not null)
             channel.LootShareOn = enabled;
+    }
+
+    public void LoadChannel(ClanChannel channel)
+    {
+        _channels[channel.Owner] = channel;
     }
 
     public bool LootShareOn(Player player)
@@ -159,23 +219,4 @@ public sealed class ClanChatService
         => channel.Owner.Equals(name, StringComparison.OrdinalIgnoreCase)
             ? 7
             : channel.Ranks.GetValueOrDefault(name, 0);
-
-    private sealed class ClanChannel(string owner, string clanName)
-    {
-        public string Owner { get; } = owner;
-        public string ClanName { get; set; } = clanName;
-        public int JoinRequirement { get; set; }
-        public int TalkRequirement { get; set; }
-        public int KickRequirement { get; set; } = 7;
-        public bool LootShareOn { get; set; }
-        public ConcurrentDictionary<string, int> Ranks { get; } = new(StringComparer.OrdinalIgnoreCase);
-        public ConcurrentDictionary<string, ClanMember> Members { get; } = new(StringComparer.OrdinalIgnoreCase);
-        public (string PlayerName, string Message) LastMessage { get; set; }
-    }
-
-    private sealed class ClanMember(string name)
-    {
-        public string Name { get; } = name;
-        public int Chance { get; set; }
-    }
 }

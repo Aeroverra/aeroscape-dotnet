@@ -5,6 +5,7 @@ using AeroScape.Server.Core.Engine;
 using AeroScape.Server.Core.Messages;
 using AeroScape.Server.Core.Services;
 using AeroScape.Server.Core.Session;
+using AeroScape.Server.Core.Combat;
 
 namespace AeroScape.Server.Core.Handlers;
 
@@ -12,15 +13,13 @@ public class NPCOption3MessageHandler : IMessageHandler<NPCOption3Message>
 {
     private readonly ILogger<NPCOption3MessageHandler> _logger;
     private readonly GameEngine _engine;
-    private readonly IClientUiService _ui;
-    private readonly ShopService _shops;
+    private readonly NPCInteractionService _npcInteractionService;
 
-    public NPCOption3MessageHandler(ILogger<NPCOption3MessageHandler> logger, GameEngine engine, IClientUiService ui, ShopService shops)
+    public NPCOption3MessageHandler(ILogger<NPCOption3MessageHandler> logger, GameEngine engine, NPCInteractionService npcInteractionService)
     {
         _logger = logger;
         _engine = engine;
-        _ui = ui;
-        _shops = shops;
+        _npcInteractionService = npcInteractionService;
     }
 
     public Task HandleAsync(PlayerSession session, NPCOption3Message message, CancellationToken cancellationToken)
@@ -33,29 +32,36 @@ public class NPCOption3MessageHandler : IMessageHandler<NPCOption3Message>
         if (npc is null)
             return Task.CompletedTask;
 
-        if (Combat.CombatFormulas.GetDistance(player.AbsX, player.AbsY, npc.AbsX, npc.AbsY) > 1)
-            return Task.CompletedTask;
-
-        switch (npc.NpcType)
+        // Deferred walk-to-NPC pattern: set pending option if not adjacent
+        if (!player.NpcOption3)
         {
-            case 548:
-                _ui.ShowInterface(player, 591);
-                break;
-            case 553:
-                player.SetCoords(3504, 3575, 0);
-                break;
-            case 1599:
-                _shops.OpenShop(player, 8);
-                break;
-            case 4906:
-                _ui.ShowNpcDialogue(player, 4906, "Woodcutting Tutor", "I'll pay you 8 coins per log you bring me.", 9827);
-                break;
-            case 1861:
-                _ui.ShowNpcDialogue(player, 1861, "Range Tutor", "Sorry, I have no work for you today...", 9827);
-                break;
+            player.ClickId = message.NpcIndex;
+            player.ClickX = npc.AbsX;
+            player.ClickY = npc.AbsY;
+            
+            if (CombatFormulas.GetDistance(player.AbsX, player.AbsY, player.ClickX, player.ClickY) > 30)
+                return Task.CompletedTask;
+            
+            player.NpcOption3 = true;
         }
 
-        _logger.LogInformation("[NPCOption3] Player {Username} npcType={NpcType}", player.Username, npc.NpcType);
+        if (player.ClickId <= 0 || player.ClickId >= _engine.Npcs.Length || _engine.Npcs[player.ClickId] is null)
+        {
+            player.NpcOption3 = false;
+            return Task.CompletedTask;
+        }
+
+        if (CombatFormulas.GetDistance(player.AbsX, player.AbsY, player.ClickX, player.ClickY) > 1)
+            return Task.CompletedTask;
+
+        player.NpcOption3 = false;
+        
+        // Use the clicked NPC from player state
+        npc = _engine.Npcs[player.ClickId];
+        
+        // Delegate to the interaction service
+        _npcInteractionService.HandleNPCOption3(player, npc);
+        
         return Task.CompletedTask;
     }
 }

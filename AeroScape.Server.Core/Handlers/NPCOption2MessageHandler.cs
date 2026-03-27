@@ -5,6 +5,7 @@ using AeroScape.Server.Core.Engine;
 using AeroScape.Server.Core.Messages;
 using AeroScape.Server.Core.Services;
 using AeroScape.Server.Core.Session;
+using AeroScape.Server.Core.Combat;
 
 namespace AeroScape.Server.Core.Handlers;
 
@@ -12,15 +13,13 @@ public class NPCOption2MessageHandler : IMessageHandler<NPCOption2Message>
 {
     private readonly ILogger<NPCOption2MessageHandler> _logger;
     private readonly GameEngine _engine;
-    private readonly ShopService _shops;
-    private readonly IClientUiService _ui;
+    private readonly NPCInteractionService _npcInteractionService;
 
-    public NPCOption2MessageHandler(ILogger<NPCOption2MessageHandler> logger, GameEngine engine, ShopService shops, IClientUiService ui)
+    public NPCOption2MessageHandler(ILogger<NPCOption2MessageHandler> logger, GameEngine engine, NPCInteractionService npcInteractionService)
     {
         _logger = logger;
         _engine = engine;
-        _shops = shops;
-        _ui = ui;
+        _npcInteractionService = npcInteractionService;
     }
 
     public Task HandleAsync(PlayerSession session, NPCOption2Message message, CancellationToken cancellationToken)
@@ -33,39 +32,36 @@ public class NPCOption2MessageHandler : IMessageHandler<NPCOption2Message>
         if (npc is null)
             return Task.CompletedTask;
 
-        if (Combat.CombatFormulas.GetDistance(player.AbsX, player.AbsY, npc.AbsX, npc.AbsY) > 1)
-            return Task.CompletedTask;
-
-        switch (npc.NpcType)
+        // Deferred walk-to-NPC pattern: set pending option if not adjacent
+        if (!player.NpcOption2)
         {
-            case 312:
-            case 313:
-            case 316:
-                player.Fishing.StartFishing(npc.NpcType, 2);
-                break;
-            case 6970:
-                _shops.OpenShop(player, 11);
-                break;
-            case 549:
-                _shops.OpenShop(player, 5);
-                break;
-            case 548:
-                _shops.OpenShop(player, 6);
-                break;
-            case 521:
-                _shops.OpenShop(player, 2);
-                break;
-            case 682:
-                _shops.OpenShop(player, 3);
-                break;
-            case 494:
-            case 495:
-            case 2619:
-                _ui.OpenBank(player);
-                break;
+            player.ClickId = message.NpcIndex;
+            player.ClickX = npc.AbsX;
+            player.ClickY = npc.AbsY;
+            
+            if (CombatFormulas.GetDistance(player.AbsX, player.AbsY, player.ClickX, player.ClickY) > 30)
+                return Task.CompletedTask;
+            
+            player.NpcOption2 = true;
         }
 
-        _logger.LogInformation("[NPCOption2] Player {Username} npcType={NpcType}", player.Username, npc.NpcType);
+        if (player.ClickId <= 0 || player.ClickId >= _engine.Npcs.Length || _engine.Npcs[player.ClickId] is null)
+        {
+            player.NpcOption2 = false;
+            return Task.CompletedTask;
+        }
+
+        if (CombatFormulas.GetDistance(player.AbsX, player.AbsY, player.ClickX, player.ClickY) > 1)
+            return Task.CompletedTask;
+
+        player.NpcOption2 = false;
+        
+        // Use the clicked NPC from player state
+        npc = _engine.Npcs[player.ClickId];
+        
+        // Delegate to the interaction service
+        _npcInteractionService.HandleNPCOption2(player, npc);
+        
         return Task.CompletedTask;
     }
 }
