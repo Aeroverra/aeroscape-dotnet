@@ -182,8 +182,11 @@ public class PlayerVsPlayerCombat
     /// </summary>
     private void ProcessRangedAttack(Player attacker, Player target, int distance)
     {
-        if (distance < 1)
-            return; // Too close — the Java code skips if distance < 1 for ranged
+        if (distance > CombatConstants.MaxRangeDistance)
+        {
+            ResetAttack(attacker);
+            return;
+        }
 
         int ammoId = attacker.Equipment[CombatConstants.SlotAmmo];
         int ammoCount = attacker.EquipmentN[CombatConstants.SlotAmmo];
@@ -206,8 +209,8 @@ public class PlayerVsPlayerCombat
         // ── Fire ranged attack ─────────────────────────────────────────────
         // Use ranged level for ranged damage, not strength (Java: p.skillLvl[4] / 4)
         int rangedLevel = attacker.SkillLvl[CombatConstants.SkillRanged];
-        int hitDamage = rangedLevel < 15 ? 1 : rangedLevel / 4;
-        hitDamage = CombatFormulas.Random(hitDamage);
+        int maxHit = rangedLevel < 15 ? 1 : rangedLevel / 4;
+        int hitDamage = CombatFormulas.Random(maxHit);
 
         attacker.RequestAnim(attacker.AttackEmote, 0);
         attacker.RequestGfx(WeaponData.GetArrowDrawGfx(ammoId), 100);
@@ -263,6 +266,7 @@ public class PlayerVsPlayerCombat
         attacker.secHit = attacker.SecondHit;
         attacker.fourHit = attacker.FourthHit;
         target.AppendHit(attacker.SecondHit, 0);
+        target.AppendHit(attacker.ThirdHit, 0);
         attacker.ClawTimer = 1;
         attacker.UseClaws = true;
     }

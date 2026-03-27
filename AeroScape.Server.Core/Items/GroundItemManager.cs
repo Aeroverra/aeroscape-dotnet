@@ -1,9 +1,11 @@
 using AeroScape.Server.Core.Combat;
 using AeroScape.Server.Core.Entities;
+using AeroScape.Server.Core.Frames;
+using AeroScape.Server.Network.Frames;
 
 namespace AeroScape.Server.Core.Items;
 
-public sealed class GroundItemManager(ItemDefinitionLoader itemDefinitions)
+public sealed class GroundItemManager(ItemDefinitionLoader itemDefinitions, GameFrames frames, Engine engine)
 {
     private const int MaxGroundItems = 1000;
     private readonly GroundItemState?[] _groundItems = new GroundItemState?[MaxGroundItems];
@@ -32,11 +34,15 @@ public sealed class GroundItemManager(ItemDefinitionLoader itemDefinitions)
                 if (!itemDefinitions.IsUntradable(groundItem.ItemId) && !string.IsNullOrEmpty(groundItem.ItemDroppedBy))
                 {
                     groundItem.IsGlobal = true;
+                    // Send createGlobalItem frame notifications like Java Items.java:71-85
+                    NotifyPlayersInRange(groundItem, true);
                 }
             }
 
             if (groundItem.ItemGroundTime <= 0)
             {
+                // Send removeGroundItem frame notifications like Java Items.java:71-85
+                NotifyPlayersInRange(groundItem, false);
                 _groundItems[i] = null;
             }
         }
@@ -149,5 +155,43 @@ public sealed class GroundItemState(int index, int itemId, int itemAmt, int item
         }
 
         return IsGlobal || ItemDroppedBy == username;
+    }
+
+    private void NotifyPlayersInRange(GroundItemState groundItem, bool isCreate)
+    {
+        // Notify all players in range like Java Items.java:71-85
+        foreach (var player in engine.Players)
+        {
+            if (player is null || !player.IsLoggedIn)
+                continue;
+
+            // Check if player is in range (same logic as visibility checks)
+            int deltaX = Math.Abs(player.AbsX - groundItem.X);
+            int deltaY = Math.Abs(player.AbsY - groundItem.Y);
+            if (deltaX <= 12 && deltaY <= 12 && player.HeightLevel == groundItem.Height)
+            {
+                if (isCreate)
+                {
+                    Write(player, w => frames.CreateGroundItem(w, player, groundItem.ItemId, groundItem.Amount, 
+                        groundItem.X, groundItem.Y, groundItem.Height));
+                }
+                else
+                {
+                    Write(player, w => frames.RemoveGroundItem(w, player, groundItem.ItemId, 
+                        groundItem.X, groundItem.Y, groundItem.Height));
+                }
+            }
+        }
+    }
+
+    private static void Write(Player player, Action<FrameWriter> build)
+    {
+        var session = player.Session;
+        if (session is null)
+            return;
+
+        using var w = new FrameWriter(4096);
+        build(w);
+        w.FlushToAsync(session.GetStream(), session.CancellationToken).GetAwaiter().GetResult();
     }
 }

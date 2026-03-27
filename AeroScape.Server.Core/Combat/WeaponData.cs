@@ -65,7 +65,7 @@ public static class WeaponData
             // Saradomin Godsword
             [11698] = new(75, 1.3, 7071, 1220, 0, false),
             // Zamorak Godsword
-            [11700] = new(50, 1.3, 7070, 1221, 0, false),
+            [11700] = new(75, 1.3, 7070, 1221, 0, false),
             // Abyssal Whip
             [4151] = new(50, 1.3, 1658, -1, 341, false),
             // Dragon Claws (multi-hit, handled specially)
@@ -101,7 +101,7 @@ public static class WeaponData
             [11694] = new(50, 1.25, 7074, 1222, 0, false),
             [11696] = new(100, 1.1, 7073, 1223, 0, false),
             [11698] = new(75, 1.1, 7071, 1220, 0, false),
-            [11700] = new(50, 1.1, 7070, 1221, 0, false),
+            [11700] = new(75, 1.1, 7070, 1221, 0, false),
             [4151] = new(50, 0.9, 1658, -1, 341, false),
             [3101] = new(50, 1.1, 2068, 274, -1, true),
             [1305] = new(25, 1.0, 1058, 248, -1, false),

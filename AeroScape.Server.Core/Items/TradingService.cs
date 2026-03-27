@@ -412,7 +412,8 @@ public sealed class TradingService(GameEngine engine, PlayerItemsService playerI
         var partner = engine.Players[player.TradePlayer];
         
         // Add bidirectional validation like Java PlayerTrade.java checkStage():77-83  
-        if (partner?.TradePlayer != player.PlayerId)
+        // Ensure both players are trading with each other
+        if (partner?.TradePlayer != player.PlayerId || player.TradePlayer != partner.PlayerId)
             return null;
             
         return partner;

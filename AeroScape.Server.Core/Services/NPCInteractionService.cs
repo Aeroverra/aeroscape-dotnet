@@ -41,9 +41,11 @@ public class NPCInteractionService
             case 494:
             case 495:
             case 2619:
+                player.TalkingTo = npc.NpcId;
                 _ui.ShowNpcDialogue(player, npc.NpcType, "Banker", "Hello there, you can bank by selecting the bank option.");
                 break;
             case 2270:
+                player.TalkingTo = npc.NpcId;
                 _ui.ShowNpcDialogue(player, 2270, "Martin Thwait", "What are you looking at noob?", 9827);
                 break;
             case 682:

@@ -420,6 +420,9 @@ public sealed class PlayerBankService(ItemDefinitionLoader itemDefinitions, Play
         {
             frames.SetString(w, freeSlots.ToString(), 762, 97);
             frames.SetItems(w, -1, 64207, 95, player.BankItems, player.BankItemsN);
+            // Add missing inventory frame updates like Java PlayerBank.java:72-76
+            frames.SetItems(w, -1, 64209, 93, player.Items, player.ItemsN);
+            frames.SetItems(w, 149, 0, 93, player.Items, player.ItemsN);
         });
     }
 

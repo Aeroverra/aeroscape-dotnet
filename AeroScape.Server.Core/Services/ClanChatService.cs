@@ -55,17 +55,22 @@ public sealed class ClanChatService
 
     public bool JoinChat(Player player, string ownerName)
     {
+        // Leave current chat first, then atomically try to join new chat
         LeaveChat(player);
 
-        if (!_channels.TryGetValue(ownerName, out var channel))
+        // Use GetOrAdd to avoid race condition between check and add
+        var channel = _channels.GetOrAdd(ownerName, key =>
         {
-            int ownerId = _engine.GetIdFromName(ownerName);
+            int ownerId = _engine.GetIdFromName(key);
             var owner = ownerId > 0 ? _engine.Players[ownerId] : null;
             if (owner is null)
-                return false;
+                return null!; // This will be handled below
+                
+            return new ClanChannel(owner.Username, string.IsNullOrWhiteSpace(owner.OwnClanName) ? owner.Username : owner.OwnClanName);
+        });
 
-            channel = _channels.GetOrAdd(owner.Username, _ => new ClanChannel(owner.Username, string.IsNullOrWhiteSpace(owner.OwnClanName) ? owner.Username : owner.OwnClanName));
-        }
+        if (channel == null)
+            return false;
 
         if (string.IsNullOrWhiteSpace(channel.ClanName) || channel.JoinRequirement > GetRank(channel, player.Username))
             return false;

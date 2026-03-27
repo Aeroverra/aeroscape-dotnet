@@ -122,6 +122,7 @@ public class PlayerVsNpcCombat
                     attacker.thirdHit2 = attacker.secHit2 / 2;
                     attacker.fourHit2 = attacker.thirdHit2 > 0 ? attacker.thirdHit2 - 1 : 0;
                     npc.AppendHit(attacker.secHit2, 0);
+                    npc.AppendHit(attacker.thirdHit2, 0);
                     attacker.clawTimer2 = 1;
                     attacker.UseClaws2 = true;
                 }
