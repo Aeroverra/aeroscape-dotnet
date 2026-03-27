@@ -61,6 +61,13 @@ public class PlayerVsNpcCombat
             return;
 
         // ── Determine combat type and execute ──────────────────────────────
+        // Check if equipment array has enough slots for weapon slot access
+        if (attacker.Equipment.Length <= CombatConstants.SlotWeapon)
+        {
+            ResetAttack(attacker);
+            return;
+        }
+        
         int weaponId = attacker.Equipment[CombatConstants.SlotWeapon];
         int distance = CombatFormulas.GetDistance(npc.AbsX, npc.AbsY, attacker.AbsX, attacker.AbsY);
 
@@ -181,6 +188,14 @@ public class PlayerVsNpcCombat
     private void ProcessRangedAttack(Player attacker, NPC npc, int distance)
     {
         if (distance > CombatConstants.MaxRangeDistance)
+        {
+            ResetAttack(attacker);
+            return;
+        }
+
+        // Check bounds for both Equipment and EquipmentN arrays
+        if (attacker.Equipment.Length <= CombatConstants.SlotAmmo || 
+            attacker.EquipmentN.Length <= CombatConstants.SlotAmmo)
         {
             ResetAttack(attacker);
             return;
