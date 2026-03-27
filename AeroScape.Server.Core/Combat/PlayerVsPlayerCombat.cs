@@ -161,6 +161,10 @@ public class PlayerVsPlayerCombat
 
         // ── Apply hit and set delays ───────────────────────────────────────
         target.AppendHit(hitDamage, 0);
+        
+        // Track damage for killer attribution
+        if (hitDamage > 0 && attacker.PlayerId < target.KilledBy.Length)
+            target.KilledBy[attacker.PlayerId] += hitDamage;
         attacker.CombatDelay = attacker.AttackDelay;
         attacker.RequestFaceTo(target.PlayerId + 32768);
         target.RequestAnim(1659, 0); // defend anim
