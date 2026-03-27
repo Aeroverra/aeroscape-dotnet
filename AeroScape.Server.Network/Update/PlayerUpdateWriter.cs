@@ -282,11 +282,11 @@ public sealed class PlayerUpdateWriter
         str.InitBitAccess();
         str.WriteBits(1, 1);
         str.WriteBits(2, 3);
-        str.WriteBits(7, p.CurrentX);
-        str.WriteBits(1, 1);
         str.WriteBits(2, p.HeightLevel);
-        str.WriteBits(1, p.UpdateReq ? 1 : 0);
+        str.WriteBits(1, 1); // clear waypoint queue
+        str.WriteBits(7, p.CurrentX);
         str.WriteBits(7, p.CurrentY);
+        str.WriteBits(1, p.UpdateReq ? 1 : 0);
     }
 
     private void SetMapRegion(Player p, FrameWriter str)
