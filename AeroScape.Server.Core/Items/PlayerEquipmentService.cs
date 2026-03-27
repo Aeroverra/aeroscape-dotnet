@@ -164,6 +164,9 @@ public sealed class PlayerEquipmentService(ItemDefinitionLoader items, PlayerIte
             player.IsAncients = 0;
         }
         
+        // Send equipment frame updates like Java Equipment.java:252-253
+        Write(player, w => frames.SetItems(w, 387, 28, 94, player.Equipment, player.EquipmentN));
+        
         player.AppearanceUpdateReq = true;
         player.UpdateReq = true;
         return true;

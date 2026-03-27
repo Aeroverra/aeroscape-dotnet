@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using AeroScape.Server.Core.Combat;
 using AeroScape.Server.Core.Entities;
+using AeroScape.Server.Core.Frames;
 using AeroScape.Server.Core.Items;
 
 namespace AeroScape.Server.Core.Services;
 
-public sealed class MagicService(PlayerItemsService playerItems)
+public sealed class MagicService(PlayerItemsService playerItems, IClientUiService ui)
 {
     public static readonly double[] ModernSpellXp =
     {
@@ -113,6 +114,17 @@ public sealed class MagicService(PlayerItemsService playerItems)
         if (player.MagicDelay > 0 || player.SkillLvl[6] < ModernLevelRequirements[25] || !HasRunes(player, (561, 1), (554, 4)))
             return false;
 
+        // Check for special 1-coal error case for iron ore (itemId 440)
+        if (itemId == 440)
+        {
+            var coalCount = playerItems.InvItemCount(player, 453);
+            if (coalCount == 1)
+            {
+                ui.SendMessage(player, "You need 2 coal and 1 iron ore to superheat a steel bar.");
+                return false;
+            }
+        }
+
         var recipe = FindSuperheatRecipe(player, itemId);
         if (recipe == null || player.SkillLvl[13] < recipe.Value.SmithLevel)
             return false;
@@ -152,6 +164,10 @@ public sealed class MagicService(PlayerItemsService playerItems)
 
     private bool TryAlchemy(Player player, int itemId, int slot, int spellId, int fireRunes, int levelIndex)
     {
+        // Add bounds checking for array access
+        if (levelIndex < 0 || levelIndex >= ModernLevelRequirements.Length || levelIndex >= ModernSpellXp.Length)
+            return false;
+            
         if (player.MagicDelay > 0 || player.SkillLvl[6] < ModernLevelRequirements[levelIndex] || !HasRunes(player, (561, 1), (554, fireRunes)))
             return false;
 
@@ -168,6 +184,10 @@ public sealed class MagicService(PlayerItemsService playerItems)
 
     private bool CastBonesSpell(Player player, int outputItemId, int buttonId, int earth, int water, int nature)
     {
+        // Add bounds checking for array access
+        if (buttonId < 0 || buttonId >= ModernLevelRequirements.Length || buttonId >= ModernSpellXp.Length)
+            return false;
+            
         if (player.SkillLvl[6] < ModernLevelRequirements[buttonId] || playerItems.InvItemCount(player, 526) <= 0)
             return false;
 
@@ -185,6 +205,10 @@ public sealed class MagicService(PlayerItemsService playerItems)
 
     private bool CastTeleport(Player player, int buttonId, int x, int y, params (int ItemId, int Amount)[] runes)
     {
+        // Add bounds checking for array access
+        if (buttonId < 0 || buttonId >= ModernLevelRequirements.Length || buttonId >= ModernSpellXp.Length)
+            return false;
+            
         if (player.MagicDelay > 0 || player.SkillLvl[6] < ModernLevelRequirements[buttonId] || !HasRunes(player, runes))
             return false;
 
@@ -268,8 +292,8 @@ public sealed class MagicService(PlayerItemsService playerItems)
             }
             if (coalCount == 1)
             {
-                // Player has only 1 coal -> error message (but this needs to be handled by caller)
-                return null; // This will cause spell to fail with appropriate error
+                // Error case handled in TrySuperheat - should not reach here
+                return null;
             }
             if (coalCount == 0)
                 return GetSuperheatRecipeByBar(2351); // Iron bar (no coal)

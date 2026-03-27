@@ -288,13 +288,13 @@ public sealed class EquipItemDecoder : IPacketDecoder
     public object? Decode(PlayerSession session, int opcode, ReadOnlySequence<byte> payload)
     {
         var r = new RsReader(payload);
-        // Java reads readDWord_v2() as junk and ignores it, then reads readUnsignedWordBigEndian() for itemId
+        // Java reads readDWord_v2() as junk and ignores it, then reads readUnsignedWordBigEndian() for wearId
         // Java ref: Equipment.java:76-77
         int junk = r.ReadDWordV2(); // Java ignores this completely
-        int itemId = r.ReadUnsignedWordBigEndian();
+        int wearId = r.ReadUnsignedWordBigEndian();
         int slot = r.ReadByte();
         r.ReadByte();
-        return new EquipItemMessage(itemId, slot, -1); // No interfaceId extracted in Java
+        return new EquipItemMessage(wearId, slot, 0); // Java doesn't extract interfaceId, use 0 instead of -1
     }
 }
 
@@ -451,13 +451,15 @@ public sealed class ObjectOption2Decoder : IPacketDecoder
 
     public object? Decode(PlayerSession session, int opcode, ReadOnlySequence<byte> payload)
     {
-        // Opcode 228 is 6 bytes: word (playerId) + word (objectX) + word (objectY)
-        // NOTE: Java ObjectOption2.java handles player interactions, not object interactions
+        // Java ObjectOption2.java handles player interactions, reading playerId then using player coordinates
+        // This should be a PlayerOption2Message, not ObjectOption2Message to match Java behavior
         var r = new RsReader(payload);
-        int firstWord = r.ReadUnsignedWord();
-        int objectX = r.ReadUnsignedWord();
-        int objectY = r.ReadUnsignedWord();
-        return new ObjectOption2Message(firstWord, objectX, objectY);
+        int playerId = r.ReadUnsignedWord();
+        // Java uses the target player's absX/absY coordinates, not separate coordinate fields
+        // For compatibility, pass 0 for unused coordinates until proper PlayerOption2Message exists
+        int unusedX = 0;
+        int unusedY = 0;
+        return new ObjectOption2Message(playerId, unusedX, unusedY);
     }
 }
 
@@ -509,14 +511,14 @@ public sealed class ItemOnItemDecoder : IPacketDecoder
         //   readSignedWordA() → itemUsed (the item being used)
         // The remaining 12 bytes are interface/slot data that the legacy server ignores.
         var r = new RsReader(payload);
-        int usedWithId = r.ReadSignedWordBigEndian();
-        int itemUsedId = r.ReadSignedWordA();
+        int usedWith = r.ReadSignedWordBigEndian();
+        int itemUsed = r.ReadSignedWordA();
         // Remaining bytes: usedWithSlot, itemUsedSlot, interface hashes (ignored by legacy)
         int usedWithSlot = r.ReadUnsignedWord();
         int itemUsedSlot = r.ReadUnsignedWord();
         int usedWithInterface = r.ReadDWord();
         int itemUsedInterface = r.ReadDWord();
-        return new ItemOnItemMessage(usedWithId, itemUsedId, usedWithSlot, itemUsedSlot, usedWithInterface, itemUsedInterface);
+        return new ItemOnItemMessage(usedWith, itemUsed, usedWithSlot, itemUsedSlot, usedWithInterface, itemUsedInterface);
     }
 }
 

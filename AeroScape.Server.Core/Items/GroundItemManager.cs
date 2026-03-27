@@ -128,6 +128,44 @@ public sealed class GroundItemManager(ItemDefinitionLoader itemDefinitions, Game
             _groundItems[index] = null;
         }
     }
+
+    private void NotifyPlayersInRange(GroundItemState groundItem, bool isCreate)
+    {
+        // Notify all players in range like Java Items.java:71-85
+        foreach (var player in engine.Players)
+        {
+            if (player is null || !player.IsLoggedIn)
+                continue;
+
+            // Check if player is in range (same logic as visibility checks)
+            int deltaX = Math.Abs(player.AbsX - groundItem.ItemX);
+            int deltaY = Math.Abs(player.AbsY - groundItem.ItemY);
+            if (deltaX <= 12 && deltaY <= 12 && player.HeightLevel == groundItem.ItemHeight)
+            {
+                if (isCreate)
+                {
+                    Write(player, w => frames.CreateGroundItem(w, player, groundItem.ItemId, groundItem.ItemAmt, 
+                        groundItem.ItemX, groundItem.ItemY, groundItem.ItemHeight));
+                }
+                else
+                {
+                    Write(player, w => frames.RemoveGroundItem(w, player, groundItem.ItemId, 
+                        groundItem.ItemX, groundItem.ItemY, groundItem.ItemHeight));
+                }
+            }
+        }
+    }
+
+    private static void Write(Player player, Action<FrameWriter> build)
+    {
+        var session = player.Session;
+        if (session is null)
+            return;
+
+        using var w = new FrameWriter(4096);
+        build(w);
+        w.FlushToAsync(session.GetStream(), session.CancellationToken).GetAwaiter().GetResult();
+    }
 }
 
 public sealed class GroundItemState(int index, int itemId, int itemAmt, int itemX, int itemY, int itemHeight, string itemDroppedBy)
@@ -157,41 +195,5 @@ public sealed class GroundItemState(int index, int itemId, int itemAmt, int item
         return IsGlobal || ItemDroppedBy == username;
     }
 
-    private void NotifyPlayersInRange(GroundItemState groundItem, bool isCreate)
-    {
-        // Notify all players in range like Java Items.java:71-85
-        foreach (var player in engine.Players)
-        {
-            if (player is null || !player.IsLoggedIn)
-                continue;
 
-            // Check if player is in range (same logic as visibility checks)
-            int deltaX = Math.Abs(player.AbsX - groundItem.X);
-            int deltaY = Math.Abs(player.AbsY - groundItem.Y);
-            if (deltaX <= 12 && deltaY <= 12 && player.HeightLevel == groundItem.Height)
-            {
-                if (isCreate)
-                {
-                    Write(player, w => frames.CreateGroundItem(w, player, groundItem.ItemId, groundItem.Amount, 
-                        groundItem.X, groundItem.Y, groundItem.Height));
-                }
-                else
-                {
-                    Write(player, w => frames.RemoveGroundItem(w, player, groundItem.ItemId, 
-                        groundItem.X, groundItem.Y, groundItem.Height));
-                }
-            }
-        }
-    }
-
-    private static void Write(Player player, Action<FrameWriter> build)
-    {
-        var session = player.Session;
-        if (session is null)
-            return;
-
-        using var w = new FrameWriter(4096);
-        build(w);
-        w.FlushToAsync(session.GetStream(), session.CancellationToken).GetAwaiter().GetResult();
-    }
 }

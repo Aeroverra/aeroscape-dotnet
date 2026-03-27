@@ -404,21 +404,33 @@ public sealed class PlayerBankService(ItemDefinitionLoader itemDefinitions, Play
 
     private void RefreshBankUi(Player player)
     {
-        // Count total free slots, not just the index of the first free slot
-        int freeSlots = 0;
+        // Java sends INDEX of first free slot, not COUNT like we were doing
+        int firstFreeSlot = -1;
         for (var i = 0; i < Size; i++)
         {
             if (player.BankItems[i] == -1)
             {
-                freeSlots++;
+                firstFreeSlot = i;
+                break;
             }
         }
-        player.BankFreeSlotCount = freeSlots;
+        
+        // Set count for compatibility but send index to UI like Java
+        int freeSlotCount = 0;
+        for (var i = 0; i < Size; i++)
+        {
+            if (player.BankItems[i] == -1)
+            {
+                freeSlotCount++;
+            }
+        }
+        player.BankFreeSlotCount = freeSlotCount;
 
         // Send missing frame updates like Java PlayerBank.java:72-76
         Write(player, w =>
         {
-            frames.SetString(w, freeSlots.ToString(), 762, 97);
+            // Java: p.frames.setString(p, "" + getFreeBankSlot(p), 762, 97) - sends SLOT INDEX
+            frames.SetString(w, firstFreeSlot.ToString(), 762, 97);
             frames.SetItems(w, -1, 64207, 95, player.BankItems, player.BankItemsN);
             // Add missing inventory frame updates like Java PlayerBank.java:72-76
             frames.SetItems(w, -1, 64209, 93, player.Items, player.ItemsN);
