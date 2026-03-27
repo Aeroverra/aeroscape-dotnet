@@ -5,7 +5,7 @@ using System.Text;
 using AeroScape.Server.Core.Engine;
 using AeroScape.Server.Core.Entities;
 using AeroScape.Server.Core.Session;
-using AeroScape.Server.Network.Frames;
+using AeroScape.Server.Core.Frames;
 
 namespace AeroScape.Server.Core.Services;
 
@@ -397,26 +397,14 @@ public sealed class CommandService
                 case "pouches":
                 case "char":
                 case "staff":
-                case "god":
-                case "god2":
-                case "godoff":
-                case "fullkc":
                 case "bh":
                 case "loadobjects":
                 case "savebackup":
                 case "loadbackup":
-                case "so":
-                case "si":
-                case "ssi":
-                case "scbi":
-                case "emote":
-                case "gfx":
                 case "slave":
                 case "private":
                 case "runsc":
                 case "newname":
-                case "givemember":
-                case "removemember":
                     return false;
                 case "rebuildnpclist":
                     player.RebuildNPCList = true;
@@ -559,9 +547,7 @@ public sealed class CommandService
                         });
                     }
                     return true;
-                case "coords":
-                    _ui.SendMessage(player, $"x: {player.AbsX}, y: {player.AbsY}");
-                    return true;
+
                 case "rs":
                     player.SpecialAmount = 1000;
                     player.SpecialAmountUpdateReq = true;

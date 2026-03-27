@@ -2,6 +2,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using AeroScape.Server.Core.Entities;
+using AeroScape.Server.Core.Frames;
 using AeroScape.Server.Core.Items;
 using AeroScape.Server.Core.World;
 

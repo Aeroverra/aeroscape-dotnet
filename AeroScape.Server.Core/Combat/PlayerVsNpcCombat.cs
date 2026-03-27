@@ -294,7 +294,7 @@ public class PlayerVsNpcCombat
     /// <summary>
     /// Handle NPC kill tracking — barrows brothers, GWD kill counts, slayer.
     /// </summary>
-    private static void ProcessNpcKill(Player attacker, NPC npc)
+    private void ProcessNpcKill(Player attacker, NPC npc)
     {
         int npcType = npc.NpcType;
 

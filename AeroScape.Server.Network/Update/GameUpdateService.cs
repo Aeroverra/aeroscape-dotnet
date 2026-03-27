@@ -1,6 +1,6 @@
 using AeroScape.Server.Core.Engine;
 using AeroScape.Server.Core.Entities;
-using AeroScape.Server.Network.Frames;
+using AeroScape.Server.Core.Frames;
 
 namespace AeroScape.Server.Network.Update;
 
