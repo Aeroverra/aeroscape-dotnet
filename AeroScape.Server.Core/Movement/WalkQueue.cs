@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using AeroScape.Server.Core.Entities;
 using AeroScape.Server.Core.Frames;
 using AeroScape.Server.Core.Messages;
-using AeroScape.Server.Network.Frames;
 using Microsoft.Extensions.Logging;
 
 namespace AeroScape.Server.Core.Movement;
@@ -206,9 +205,9 @@ public sealed class WalkQueue
             return;
         }
 
-        // Validate bounds before any array access - ensure consistency with Player.WalkingQueueSize
+        // Validate bounds before any array access - ensure consistency with player.WalkingQueueSize
         if (player.WQueueWritePtr < 0 ||
-            player.WQueueWritePtr >= Player.WalkingQueueSize ||
+            player.WQueueWritePtr >= player.WalkingQueueSize ||
             player.WQueueWritePtr >= player.WalkingQueueX.Length ||
             player.WQueueWritePtr >= player.WalkingQueueY.Length ||
             player.WQueueWritePtr >= player.WalkingQueue.Length)
@@ -218,7 +217,7 @@ public sealed class WalkQueue
 
         // Validate read position bounds
         if (player.WQueueWritePtr == 0 || 
-            (player.WQueueWritePtr - 1) >= Player.WalkingQueueSize ||
+            (player.WQueueWritePtr - 1) >= player.WalkingQueueSize ||
             (player.WQueueWritePtr - 1) >= player.WalkingQueueX.Length)
         {
             return;

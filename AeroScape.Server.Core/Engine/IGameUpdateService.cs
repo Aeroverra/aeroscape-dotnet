@@ -9,4 +9,6 @@ public interface IGameUpdateService
     void ClearPlayerUpdateReqs(Player player);
     void ClearNpcUpdateMasks(NPC npc);
     void ProcessNpcMovement(NPC npc);
+    void RestoreTabs(Player player);
+    void ProcessNpcRandomWalk(NPC npc);
 }

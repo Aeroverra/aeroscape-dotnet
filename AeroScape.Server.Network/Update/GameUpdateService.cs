@@ -46,4 +46,17 @@ public sealed class GameUpdateService : IGameUpdateService
         if (npc.RandomWalk && !npc.AttackingPlayer)
             _npcUpdateWriter.RandomWalk(npc);
     }
+
+    public void RestoreTabs(Player player)
+    {
+        // Restore tabs functionality - typically sends interface updates to restore client tabs
+        // Implementation depends on specific game requirements
+    }
+
+    public void ProcessNpcRandomWalk(NPC npc)
+    {
+        // Process NPC random walk - delegate to NPC update writer
+        if (npc.RandomWalk && !npc.AttackingPlayer)
+            _npcUpdateWriter.RandomWalk(npc);
+    }
 }

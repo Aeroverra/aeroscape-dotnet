@@ -1,6 +1,5 @@
 using AeroScape.Server.Core.Entities;
 using AeroScape.Server.Core.Frames;
-using AeroScape.Server.Network.Frames;
 
 namespace AeroScape.Server.Core.Items;
 
@@ -150,7 +149,7 @@ public sealed class PlayerEquipmentService(ItemDefinitionLoader items, PlayerIte
         {
             player.IsAncients = 1;
             // Send magic interface update based on HD client like Java
-            if (player.UsingHD)
+            if (player.UsingHd)
             {
                 Write(player, w => frames.SetInterface(w, 1, 746, 93, 193)); // HD Ancients tab
             }

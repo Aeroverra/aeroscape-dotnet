@@ -1,11 +1,11 @@
 using AeroScape.Server.Core.Combat;
 using AeroScape.Server.Core.Entities;
+using AeroScape.Server.Core.Engine;
 using AeroScape.Server.Core.Frames;
-using AeroScape.Server.Network.Frames;
 
 namespace AeroScape.Server.Core.Items;
 
-public sealed class GroundItemManager(ItemDefinitionLoader itemDefinitions, GameFrames frames, Engine engine)
+public sealed class GroundItemManager(ItemDefinitionLoader itemDefinitions, GameFrames frames, GameEngine engine)
 {
     private const int MaxGroundItems = 1000;
     private readonly GroundItemState?[] _groundItems = new GroundItemState?[MaxGroundItems];
@@ -134,7 +134,7 @@ public sealed class GroundItemManager(ItemDefinitionLoader itemDefinitions, Game
         // Notify all players in range like Java Items.java:71-85
         foreach (var player in engine.Players)
         {
-            if (player is null || !player.IsLoggedIn)
+            if (player is null || !player.Online)
                 continue;
 
             // Check if player is in range (same logic as visibility checks)

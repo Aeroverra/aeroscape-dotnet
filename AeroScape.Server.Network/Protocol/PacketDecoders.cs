@@ -615,8 +615,8 @@ public sealed class ItemOnObjectDecoder : IPacketDecoder
         int objectX = r.ReadUnsignedWordBigEndian();
         int objectY = r.ReadUnsignedWordBigEndianA();
         // Skip remaining bytes (slot, interface hash) as they're not used in legacy
-        r.ReadSignedWord(); // slot
-        r.ReadUnsignedWord(); // interface hash
+        // r.ReadSignedWord(); // slot (method doesn't exist)
+        // r.ReadUnsignedWord(); // interface hash
         return new ItemOnObjectMessage(objectId, itemId, objectX, objectY);
     }
 }
@@ -889,19 +889,13 @@ public sealed class TradeAcceptDecoder : IPacketDecoder
         
         // Validate raw value to prevent invalid calculations
         if (raw < TRADE_ID_BASE)
-        {
-            session.Logger?.LogWarning($"TradeAccept: Invalid raw value {raw} (less than base {TRADE_ID_BASE})");
             return null;
-        }
         
         int partnerId = (raw - TRADE_ID_BASE) / TRADE_ID_DIVISOR + 1;
         
-        // Validate calculated partner ID is within reasonable bounds
-        if (partnerId < 1 || partnerId > 2047) // Max player index in RS
-        {
-            session.Logger?.LogWarning($"TradeAccept: Invalid partner ID {partnerId} calculated from raw value {raw}");
+        // Validate calculated partner ID is within reasonable bounds (max player index in RS)
+        if (partnerId < 1 || partnerId > 2047)
             return null;
-        }
         
         return new TradeAcceptMessage(partnerId);
     }

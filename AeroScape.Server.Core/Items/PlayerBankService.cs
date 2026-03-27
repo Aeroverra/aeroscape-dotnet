@@ -1,6 +1,5 @@
 using AeroScape.Server.Core.Entities;
 using AeroScape.Server.Core.Frames;
-using AeroScape.Server.Network.Frames;
 
 namespace AeroScape.Server.Core.Items;
 

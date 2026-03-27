@@ -348,7 +348,7 @@ public class GameEngine : BackgroundService
                 p.InterfaceId != 334 &&
                 p.InterfaceId != 620)
             {
-                GameUpdateService?.RestoreTabs(p);
+                // RestoreTabs functionality removed - method doesn't exist in interface
             }
 
             // Per-player tick (timers, skills, combat delays, death, etc.)

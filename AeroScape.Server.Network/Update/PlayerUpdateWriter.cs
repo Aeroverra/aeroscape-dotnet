@@ -29,10 +29,10 @@ public sealed class PlayerUpdateWriter
             if (p.MapRegionX != -1 && p.MapRegionY != -1)
             {
                 // Prevent coordinate underflow by ensuring regions are at least 6
-                int safeMapRegionX = Math.Max(6, p.MapRegionX);
-                int safeMapRegionY = Math.Max(6, p.MapRegionY);
-                int relX = p.TeleportToX - (safeMapRegionX - 6) * 8;
-                int relY = p.TeleportToY - (safeMapRegionY - 6) * 8;
+                int safeTeleportRegionX = Math.Max(6, p.MapRegionX);
+                int safeTeleportRegionY = Math.Max(6, p.MapRegionY);
+                int relX = p.TeleportToX - (safeTeleportRegionX - 6) * 8;
+                int relY = p.TeleportToY - (safeTeleportRegionY - 6) * 8;
                 if (relX >= 2 * 8 && relX < 11 * 8 && relY >= 2 * 8 && relY < 11 * 8)
                     p.MapRegionDidChange = false;
             }

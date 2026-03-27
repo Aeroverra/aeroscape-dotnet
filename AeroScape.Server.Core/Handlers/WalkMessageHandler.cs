@@ -2,6 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AeroScape.Server.Core.Messages;
 using AeroScape.Server.Core.Movement;
+using AeroScape.Server.Core.Services;
 using AeroScape.Server.Core.Session;
 using Microsoft.Extensions.Logging;
 
@@ -15,11 +16,13 @@ public class WalkMessageHandler : IMessageHandler<WalkMessage>
 {
     private readonly ILogger<WalkMessageHandler> _logger;
     private readonly WalkQueue _walkQueue;
+    private readonly IClientUiService _ui;
 
-    public WalkMessageHandler(ILogger<WalkMessageHandler> logger, WalkQueue walkQueue)
+    public WalkMessageHandler(ILogger<WalkMessageHandler> logger, WalkQueue walkQueue, IClientUiService ui)
     {
         _logger = logger;
         _walkQueue = walkQueue;
+        _ui = ui;
     }
 
     public Task HandleAsync(PlayerSession session, WalkMessage message, CancellationToken cancellationToken)
@@ -40,7 +43,7 @@ public class WalkMessageHandler : IMessageHandler<WalkMessage>
         // Check for freeze delay - match Java Walking.java:55-57
         if (player.FreezeDelay > 0)
         {
-            session.SendMessage("You cant move! Your frozen!");
+            _ui.SendMessage(player, "You cant move! Your frozen!");
             return Task.CompletedTask;
         }
 

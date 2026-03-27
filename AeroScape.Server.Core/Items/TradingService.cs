@@ -233,8 +233,8 @@ public sealed class TradingService(GameEngine engine, PlayerItemsService playerI
         var partnerItemsSnapshot = SnapshotTradeItems(partner);
 
         // Critical: Validate inventory space before completing trade to prevent duplication
-        if (!CanReceiveTradeItems(player, partnerItemsSnapshot) || 
-            !CanReceiveTradeItems(partner, playerItemsSnapshot))
+        if (!CanReceiveTradeItems(player, partnerItemsSnapshot.ToArray()) || 
+            !CanReceiveTradeItems(partner, playerItemsSnapshot.ToArray()))
         {
             // Not enough inventory space - abort trade without duplication
             player.LastTickMessage = "Not enough inventory space to complete trade.";
