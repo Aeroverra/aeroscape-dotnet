@@ -32,7 +32,17 @@ public class NpcVsPlayerCombat
             return;
         }
 
-        var target = _engine.Players[npc.AttackPlayer];
+        // Thread-safe access to prevent race conditions
+        Player target;
+        try
+        {
+            target = _engine.Players[npc.AttackPlayer];
+        }
+        catch (IndexOutOfRangeException)
+        {
+            ResetAttack(npc);
+            return;
+        }
 
         if (target == null || target.IsDead || npc.IsDead || target.Disconnected[1])
         {

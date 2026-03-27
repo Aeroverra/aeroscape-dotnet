@@ -329,11 +329,13 @@ public class GameEngine : BackgroundService
         _shops.Process(this);
 
         // ── 2. Player per-tick processing & movement ────────────────────────
-        for (int i = 1; i < Players.Length; i++)
+        lock (_playersLock)
         {
-            var p = Players[i];
-            if (p == null || !p.Online)
-                continue;
+            for (int i = 1; i < Players.Length; i++)
+            {
+                var p = Players[i];
+                if (p == null || !p.Online)
+                    continue;
 
             // Handle disconnection
             if (p.Disconnected[0] && p.Disconnected[1])

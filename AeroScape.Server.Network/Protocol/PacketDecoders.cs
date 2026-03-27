@@ -16,7 +16,12 @@ internal ref struct RsReader
 
     public RsReader(ReadOnlySequence<byte> seq) => _r = new SequenceReader<byte>(seq);
 
-    public byte ReadByte() { _r.TryRead(out byte b); return b; }
+    public byte ReadByte() 
+    { 
+        if (!_r.TryRead(out byte b)) 
+            throw new InvalidOperationException("Buffer underrun: attempted to read byte beyond buffer end");
+        return b; 
+    }
     public sbyte ReadSignedByte() => (sbyte)ReadByte();
     public sbyte ReadSignedByteC() => (sbyte)(-ReadByte());
     public sbyte ReadSignedByteS() => (sbyte)(128 - ReadByte());

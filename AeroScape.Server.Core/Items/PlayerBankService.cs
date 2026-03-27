@@ -47,22 +47,48 @@ public sealed class PlayerBankService(ItemDefinitionLoader itemDefinitions, Play
             SendTabConfig(player);
         }
 
+        // Validate bank operation BEFORE deleting items from inventory
+        if (bankCount == 0 && freeBankSlot == -1)
+        {
+            player.LastTickMessage = "Not enough space in your bank.";
+            return; // Early return - don't modify anything
+        }
+
         if (bankCount + amount < 0)
         {
             amount = ItemDefinitionLoader.MaxItemAmount - bankCount;
             player.LastTickMessage = "Your bank is full";
         }
 
-        if (bankCount == 0 && freeBankSlot == -1)
-        {
-            player.LastTickMessage = "Not enough space in your bank.";
-            return;
-        }
-
+        // Additional validation for existing bank slot
         if (bankCount > 0)
         {
             var bankSlot = GetBankItemSlot(player, itemId);
-            player.BankItemsN[bankSlot] += amount;
+            if (bankSlot < 0) // Item no longer exists in bank
+            {
+                // Treat as new item deposit instead
+                if (freeBankSlot == -1)
+                {
+                    player.LastTickMessage = "Not enough space in your bank.";
+                    return;
+                }
+                player.BankItems[freeBankSlot] = itemId;
+                player.BankItemsN[freeBankSlot] = amount;
+            }
+            else
+            {
+                // Check for overflow before adding
+                if (player.BankItemsN[bankSlot] + amount > ItemDefinitionLoader.MaxItemAmount)
+                {
+                    amount = ItemDefinitionLoader.MaxItemAmount - player.BankItemsN[bankSlot];
+                    if (amount <= 0)
+                    {
+                        player.LastTickMessage = "Your bank is full for that item.";
+                        return;
+                    }
+                }
+                player.BankItemsN[bankSlot] += amount;
+            }
         }
         else
         {
@@ -70,6 +96,7 @@ public sealed class PlayerBankService(ItemDefinitionLoader itemDefinitions, Play
             player.BankItemsN[freeBankSlot] = amount;
         }
 
+        // Only delete from inventory AFTER successful bank operation
         playerItems.DeleteItem(player, player.Items[inventorySlot], inventorySlot, amount);
         RefreshBankUi(player);
     }
