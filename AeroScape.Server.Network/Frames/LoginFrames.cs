@@ -23,7 +23,7 @@ public static class LoginFrames
         Stream stream, Player player, bool usingHD, MapDataService mapData, ItemDefinitionLoader items, CancellationToken ct)
     {
         var w = new FrameWriter(8192);
-        WriteMapRegion(w, player, mapData);
+        WriteMapRegion(w, player, mapData, false);
         await w.FlushToAsync(stream, ct);
         WriteSetWelcome(w);
         WriteFriendServerStatus(w);
@@ -292,7 +292,7 @@ public static class LoginFrames
     }
 
     /// <summary>Frame 142 (var-size word): setMapRegion with XTEA keys from MapDataService</summary>
-    private static void WriteMapRegion(FrameWriter w, Player p, MapDataService mapData)
+    private static void WriteMapRegion(FrameWriter w, Player p, MapDataService mapData, bool isRecoveryAttempt = false)
     {
         // Calculate map region from absolute coordinates
         p.MapRegionX = (p.AbsX >> 3);
@@ -327,6 +327,17 @@ public static class LoginFrames
                     int[]? keys = mapData.GetMapData(region);
                     if (keys == null)
                     {
+                        // Fixed: Prevent infinite recursion by checking if this is already a recovery attempt
+                        if (isRecoveryAttempt)
+                        {
+                            // If recovery also failed, send empty region frame to prevent crash
+                            w.WriteDWord(0); // Default XTEA key
+                            w.WriteDWord(0);
+                            w.WriteDWord(0);
+                            w.WriteDWord(0);
+                            continue;
+                        }
+                        
                         // Missing XTEA keys — teleport player to Varrock and abort region frame
                         // (matches Java Frames.java:1127-1131)
                         p.SetCoords(3254, 3420, 0);
@@ -338,7 +349,7 @@ public static class LoginFrames
                         // Discard the partial frame and restart with the safe region
                         w.Dispose();
                         w = new FrameWriter(8192);
-                        WriteMapRegion(w, p, mapData);
+                        WriteMapRegion(w, p, mapData, true); // Mark as recovery attempt
                         return;
                     }
                     w.WriteDWord(keys[0]);

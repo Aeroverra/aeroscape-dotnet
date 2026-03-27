@@ -81,6 +81,11 @@ public sealed class FrameWriter : IDisposable
 
     public void WriteByte(int val)
     {
+        // Fixed: Ensure we're not in bit access mode before writing bytes
+        if (_bitPosition > _offset * 8)
+        {
+            throw new InvalidOperationException("Cannot write bytes while in bit access mode. Call FinishBitAccess() first.");
+        }
         EnsureCapacity(1);
         _buf[_offset++] = (byte)val;
     }
@@ -196,6 +201,11 @@ public sealed class FrameWriter : IDisposable
 
     public void WriteBytes(byte[] data, int length, int startOffset)
     {
+        // Fixed: Ensure we're not in bit access mode before writing bytes
+        if (_bitPosition > _offset * 8)
+        {
+            throw new InvalidOperationException("Cannot write bytes while in bit access mode. Call FinishBitAccess() first.");
+        }
         EnsureCapacity(length);
         Buffer.BlockCopy(data, startOffset, _buf, _offset, length);
         _offset += length;

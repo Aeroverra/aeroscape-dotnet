@@ -523,7 +523,7 @@ public sealed class GameFrames
             }
             else
             {
-                // Type safety check for integer arguments
+                // Fixed: Enhanced type safety check for all integer argument types
                 if (args[j] is int intArg)
                 {
                     w.WriteDWord(intArg);
@@ -535,6 +535,22 @@ public sealed class GameFrames
                 else if (args[j] is short shortArg)
                 {
                     w.WriteDWord(shortArg);
+                }
+                else if (args[j] is long longArg)
+                {
+                    w.WriteDWord((int)longArg); // Truncate to int range, may overflow but matches protocol
+                }
+                else if (args[j] is uint uintArg)
+                {
+                    w.WriteDWord(unchecked((int)uintArg)); // Treat as signed int
+                }
+                else if (args[j] is ushort ushortArg)
+                {
+                    w.WriteDWord(ushortArg);
+                }
+                else if (args[j] is sbyte sbyteArg)
+                {
+                    w.WriteDWord(sbyteArg);
                 }
                 else
                 {
@@ -1143,26 +1159,36 @@ public sealed class GameFrames
                 bitPosition += size;
                 int lastByte = ((shift + size) - 1 >> 3) + byteIndex;
                 shift += 24;
+                // Fixed: Add bounds check to prevent buffer overflow
+                if (byteIndex >= output.Length) break;
                 output[byteIndex] = (byte)(carry = carry | UnsignedRightShift(encoded, shift));
                 if (lastByte > byteIndex)
                 {
                     byteIndex++;
                     shift -= 8;
+                    // Fixed: Add bounds check to prevent buffer overflow
+                    if (byteIndex >= output.Length) break;
                     output[byteIndex] = (byte)(carry = UnsignedRightShift(encoded, shift));
                     if (lastByte > byteIndex)
                     {
                         byteIndex++;
                         shift -= 8;
+                        // Fixed: Add bounds check to prevent buffer overflow
+                        if (byteIndex >= output.Length) break;
                         output[byteIndex] = (byte)(carry = UnsignedRightShift(encoded, shift));
                         if (lastByte > byteIndex)
                         {
                             shift -= 8;
                             byteIndex++;
+                            // Fixed: Add bounds check to prevent buffer overflow
+                            if (byteIndex >= output.Length) break;
                             output[byteIndex] = (byte)(carry = UnsignedRightShift(encoded, shift));
                             if (byteIndex < lastByte)
                             {
                                 shift -= 8;
                                 byteIndex++;
+                                // Fixed: Add bounds check to prevent buffer overflow
+                                if (byteIndex >= output.Length) break;
                                 output[byteIndex] = (byte)(carry = encoded << -shift);
                             }
                         }

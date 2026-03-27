@@ -447,10 +447,13 @@ public sealed class PlayerUpdateWriter
         chatBuf[0] = (byte)plain.Length;
         int encodedLength = ChatCodec.EncryptPlayerChat(chatBuf, 0, 1, plain.Length, plain);
         
-        // Ensure encoded length doesn't exceed buffer capacity
-        if (encodedLength > 255) // 255 because we need 1 byte for length
+        // Fixed: Ensure encoded length doesn't exceed buffer capacity with proper validation
+        if (encodedLength > 254) // 254 because we need 1 byte for length prefix, leaving 255 total max
         {
-            encodedLength = 255;
+            // Properly truncate the buffer content, not just the length to avoid corruption
+            encodedLength = 254;
+            // Zero out any potentially corrupted bytes beyond the valid range
+            Array.Clear(chatBuf, 1 + encodedLength, chatBuf.Length - 1 - encodedLength);
         }
         
         int totalLength = 1 + encodedLength;
@@ -466,7 +469,8 @@ public sealed class PlayerUpdateWriter
         else
             str.WriteByteS(2);
         int maxHP = p.GetLevelForXP(3);
-        int hpRatio = maxHP > 0 ? p.SkillLvl[3] * 255 / maxHP : 0;
+        // Fixed: Prevent integer overflow by using long arithmetic for intermediate calculation
+        int hpRatio = maxHP > 0 ? (int)((long)p.SkillLvl[3] * 255L / maxHP) : 0;
         str.WriteByteS(hpRatio);
     }
 
