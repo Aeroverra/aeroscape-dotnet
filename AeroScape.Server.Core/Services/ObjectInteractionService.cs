@@ -101,9 +101,6 @@ public sealed class ObjectInteractionService
 
     private bool HasObjectAt(int objectId, int x, int y)
     {
-        if (y == 0)
-            return true;
-
         foreach (var obj in _engine.LoadedObjects)
         {
             if (obj.ObjectId == objectId && obj.X == x && obj.Y == y)
