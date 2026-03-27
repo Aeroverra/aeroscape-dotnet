@@ -301,6 +301,11 @@ public sealed class PlayerBankService(ItemDefinitionLoader itemDefinitions, Play
         for (var i = 0; i < size; i++)
         {
             var slot = GetFreeBankSlot(player);
+            if (slot == -1)
+            {
+                player.LastTickMessage = "Not enough space in your bank.";
+                break;
+            }
             player.BankItems[slot] = tempItems[i];
             player.BankItemsN[slot] = tempAmounts[i];
         }
