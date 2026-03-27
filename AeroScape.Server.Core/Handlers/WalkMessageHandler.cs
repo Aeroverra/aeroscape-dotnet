@@ -31,6 +31,8 @@ public class WalkMessageHandler : IMessageHandler<WalkMessage>
         if (player is null)
             return;
 
+        Console.WriteLine($"[WALK] {player.Username} walking to ({message.FirstX}, {message.FirstY}) running={message.IsRunning}");
+        
         _logger.LogDebug(
             "Player {Username} walking: first=({X}, {Y}) steps={Steps} running={Running} opcode={Opcode}",
             player.Username,
