@@ -21,6 +21,8 @@ public static class CombatFormulas
         if (range <= 0) return 0;
         // Prevent integer overflow when range is int.MaxValue
         if (range == int.MaxValue) return _rng.Value.Next(range);
+        // Additional safety: ensure range + 1 doesn't overflow
+        if (range > int.MaxValue - 1) return _rng.Value.Next(range);
         return _rng.Value.Next(range + 1);
     }
 
