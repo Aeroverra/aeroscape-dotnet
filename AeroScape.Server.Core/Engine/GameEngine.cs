@@ -46,6 +46,9 @@ public class GameEngine : BackgroundService
     /// <summary>Player slots. Index 0 is unused (client can't handle id 0).</summary>
     public Player?[] Players { get; } = new Player?[MaxPlayers];
 
+    /// <summary>Lock object for thread-safe access to Players array.</summary>
+    private readonly object _playersLock = new object();
+
     /// <summary>NPC slots. Index 0 is unused.</summary>
     public NPC?[] Npcs { get; } = new NPC?[MaxNpcs];
     public Dictionary<int, NpcDefinition> NpcDefinitions { get; } = new();
@@ -140,11 +143,15 @@ public class GameEngine : BackgroundService
     {
         if (slot <= 0 || slot >= Players.Length)
             return false;
-        if (Players[slot] != null)
-            return false;
 
-        player.PlayerId = slot;
-        Players[slot] = player;
+        lock (_playersLock)
+        {
+            if (Players[slot] != null)
+                return false;
+
+            player.PlayerId = slot;
+            Players[slot] = player;
+        }
         return true;
     }
 
@@ -154,10 +161,15 @@ public class GameEngine : BackgroundService
     /// </summary>
     public void RemovePlayer(int id)
     {
-        if (id <= 0 || id >= Players.Length || Players[id] == null)
+        if (id <= 0 || id >= Players.Length)
             return;
 
-        Players[id] = null;
+        lock (_playersLock)
+        {
+            if (Players[id] == null)
+                return;
+            Players[id] = null;
+        }
     }
 
     /// <summary>
@@ -417,7 +429,7 @@ public class GameEngine : BackgroundService
         // Update player count (mirrors Java Engine constPlayers tracking)
         // Thread-safe player count with proper synchronization
         int count = 0;
-        lock (Players) // Lock the actual array to prevent race conditions
+        lock (_playersLock) // Use dedicated lock object for thread safety
         {
             for (int i = 1; i < Players.Length; i++)
             {
@@ -452,8 +464,6 @@ public class GameEngine : BackgroundService
         {
             ZamorakFlag = false;
             ZamorakP = 0;
-            // Clear any lingering reference to allow proper garbage collection
-            zamorakCarrier = null;
         }
         else if (ZamorakP > 0)
         {
@@ -465,8 +475,6 @@ public class GameEngine : BackgroundService
         {
             SaradominFlag = false;
             SaradominP = 0;
-            // Clear any lingering reference to allow proper garbage collection
-            saradominCarrier = null;
         }
         else if (SaradominP > 0)
         {

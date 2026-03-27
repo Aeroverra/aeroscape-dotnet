@@ -110,11 +110,19 @@ public class Equipment implements Packet {
         if (!canEquip) {
             return;
         }
-        if (index < 0 || index >= p.items.length) {
+        // SECURITY FIX: Enhanced bounds checking for equipment
+        if (index < 0 || index >= p.items.length || index >= p.itemsN.length) {
+            return;
+        }
+        
+        // Additional validation for equipment slot bounds
+        int targetSlot = itemType(wearId);
+        if (targetSlot < 0 || targetSlot >= p.equipment.length || targetSlot >= p.equipmentN.length) {
+            Misc.println("[" + p.username + "] Invalid equipment slot: " + targetSlot + " for item: " + wearId);
             return;
         }
         if (p.items[index] == wearId) {
-            int targetSlot = itemType(wearId);
+            // targetSlot already validated above in bounds checking
             if (targetSlot == 2 && p.equipment[2] == 4021 && wearId != 4021) {
                 p.npcType = -1;
                 p.appearanceUpdateReq = true;

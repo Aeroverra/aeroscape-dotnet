@@ -93,6 +93,11 @@ public sealed class PacketRouter
         Reg(new ConstructionDecoder(),    190);
         Reg(new ClanKickDecoder(),        200);
         Reg(new NoOpDecoder(),            43, 62, 99);
+
+        // Missing packet decoder registrations (fixed from audit round 12-5)
+        Reg(new PrayerDecoder(),          129);
+        Reg(new BountyHunterDecoder(),    155);
+        Reg(new ItemOnNPCDecoder(),       214);
     }
 
     /// <summary>

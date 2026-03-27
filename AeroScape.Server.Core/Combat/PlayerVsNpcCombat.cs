@@ -230,7 +230,7 @@ public class PlayerVsNpcCombat
         attacker.RequestFaceTo(npc.NpcId);
 
         int rangeLevel = attacker.SkillLvl[CombatConstants.SkillRanged];
-        int xpSeedHit = rangeLevel < 15 ? 1 : rangeLevel / 4;
+        int xpSeedHit = rangeLevel < 15 ? 1 : Math.Max(1, rangeLevel / 4);
         int hitDamage = CombatFormulas.Random(xpSeedHit);
         npc.AppendHit(hitDamage, 0);
         npc.RequestAnim(424, 0);
@@ -358,10 +358,18 @@ public class PlayerVsNpcCombat
         // ── Dragon Slayer quest ────────────────────────────────────────────
         if (npcType == 742 && attacker.DragonSlayer == 3)
         {
-            attacker.HeadTimer = 8;
-            attacker.DragonSlayer = 4;
-            _playerItems.AddItem(attacker, 11279, 1);
-            attacker.LastTickMessage = "You slayed Elvarg and took his head!";
+            // Check inventory space before advancing quest state
+            if (_playerItems.FreeSlots(attacker) > 0)
+            {
+                attacker.HeadTimer = 8;
+                attacker.DragonSlayer = 4;
+                _playerItems.AddItem(attacker, 11279, 1);
+                attacker.LastTickMessage = "You slayed Elvarg and took his head!";
+            }
+            else
+            {
+                attacker.LastTickMessage = "You need inventory space to take Elvarg's head!";
+            }
         }
     }
 

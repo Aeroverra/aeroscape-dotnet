@@ -36,12 +36,26 @@ public class PlayerBank {
             // This line should be removed once you figure out how to not switch back to main tab automaticly when depositing in a tab.
             p.viewingBankTab = 10;
         }
+        // SECURITY FIX: Proper bank overflow detection
         if (bankItemCount + amt < 0) {
             amt = Integer.MAX_VALUE - bankItemCount;
-            p.frames.sendMessage(p, "Your bank is full");
+            p.frames.sendMessage(p, "Bank item amount would overflow!");
+            return;
         }
+        
+        // Check if adding a new item would exceed bank capacity
         if (bankItemCount == 0 && freeBankSlot == -1) {
             p.frames.sendMessage(p, "Not enough space in your bank.");
+            return;
+        }
+        
+        // Additional check: ensure we don't exceed total bank slot capacity
+        int usedSlots = 0;
+        for (int i = 0; i < SIZE; i++) {
+            if (p.bankItems[i] != -1) usedSlots++;
+        }
+        if (bankItemCount == 0 && usedSlots >= SIZE) {
+            p.frames.sendMessage(p, "Your bank is completely full.");
             return;
         } else if (bankItemCount > 0) {
             int bankItemSlot = getBankItemSlot(p, itemId);
@@ -61,7 +75,9 @@ public class PlayerBank {
      * Remove a item from bank, add to inv
      */
     public void bankWithdraw(Player p, int id, int amt) {
-        if (p == null || id < 0 || id >= SIZE || p.bankItems[id] == -1) {
+        // SECURITY FIX: Enhanced bounds checking for bank withdrawal
+        if (p == null || id < 0 || id >= SIZE || id >= p.bankItems.length || 
+            id >= p.bankItemsN.length || p.bankItems[id] == -1) {
             return;
         }
         int itemId = p.bankItems[id];
@@ -135,7 +151,9 @@ public class PlayerBank {
      * Finds the bank slot for item X
      */
     public int getBankItemSlot(Player p, int itemId) {
-        for (int i = 0; i < SIZE; i++) {
+        // SECURITY FIX: Bounds checking against actual array length
+        int maxCheck = Math.min(SIZE, p.bankItems.length);
+        for (int i = 0; i < maxCheck; i++) {
             if (p.bankItems[i] == itemId) {
                 return i;
             }
@@ -147,7 +165,9 @@ public class PlayerBank {
      * Finds a free bank slot
      */
     public int getFreeBankSlot(Player p) {
-        for (int i = 0; i < SIZE; i++) {
+        // SECURITY FIX: Bounds checking against actual array length
+        int maxCheck = Math.min(SIZE, p.bankItems.length);
+        for (int i = 0; i < maxCheck; i++) {
             if (p.bankItems[i] == -1) {
                 return i;
             }
@@ -159,7 +179,9 @@ public class PlayerBank {
      * Finds how much of item X you have in your bank
      */
     public int getBankItemCount(Player p, int itemId) {
-        for (int i = 0; i < SIZE; i++) {
+        // SECURITY FIX: Bounds checking against actual array length
+        int maxCheck = Math.min(SIZE, Math.min(p.bankItems.length, p.bankItemsN.length));
+        for (int i = 0; i < maxCheck; i++) {
             if (p.bankItems[i] == itemId) {
                 return p.bankItemsN[i];
             }

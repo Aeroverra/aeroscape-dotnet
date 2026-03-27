@@ -270,16 +270,26 @@ public class NPC
             return;
         }
 
+        // Handle follow counter logic based on NPC ownership and player combat state
         if (!player.AttackingNPC && FollowCounter < 4)
         {
             FollowCounter++;
         }
         else if (player.AttackingNPC)
         {
-            // Only reset counter when player is actively attacking, not for owned NPCs
-            FollowCounter = 0;
+            // Reset counter when player is actively attacking
+            // For owned/summoned NPCs, don't increment counter to prevent abandonment
+            if (IsSummoned || Owner != null)
+            {
+                // Owned NPCs maintain following until explicitly dismissed
+                FollowCounter = Math.Max(0, FollowCounter - 1);
+            }
+            else
+            {
+                // Wild NPCs reset counter when player attacks
+                FollowCounter = 0;
+            }
         }
-        // Don't reset counter for owned/summoned NPCs unless player is attacking
 
         var playerX = player.AbsX;
         var playerY = player.AbsY;

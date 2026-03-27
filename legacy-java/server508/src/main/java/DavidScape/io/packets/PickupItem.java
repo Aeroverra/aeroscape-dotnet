@@ -42,9 +42,28 @@ public class PickupItem implements Packet {
         GroundItem g = Engine.items.groundItems[idx];
 
         if (g != null) {
-            if (Engine.playerItems.addItem(p, g.itemId, g.itemAmt)) {
-                Engine.items.itemPickedup(g.itemId, g.itemX, g.itemY,
-                        p.heightLevel);
+            // SECURITY FIX: Validate ground item ownership and timer
+            boolean canPickup = false;
+            
+            if (g.itemDroppedBy.equals("")) {
+                // Global item - anyone can pick up
+                canPickup = true;
+            } else if (g.itemDroppedBy.equals(p.username)) {
+                // Owner can always pick up their own items
+                canPickup = true;
+            } else if (g.itemGroundTime <= 60 && !Engine.items.isUntradable(g.itemId)) {
+                // Item has gone public (timer <= 60) and is tradable
+                canPickup = true;
+            }
+            
+            if (canPickup) {
+                if (Engine.playerItems.addItem(p, g.itemId, g.itemAmt)) {
+                    Engine.items.itemPickedup(g.itemId, g.itemX, g.itemY,
+                            p.heightLevel);
+                }
+            } else {
+                // Item belongs to another player and is still protected
+                p.frames.sendMessage(p, "This item belongs to another player.");
             }
         }
     }

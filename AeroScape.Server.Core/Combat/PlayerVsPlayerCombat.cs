@@ -75,7 +75,7 @@ public class PlayerVsPlayerCombat
 
         // ── Determine combat type and execute ──────────────────────────────
         // Check equipment bounds before accessing weapon slot
-        if (CombatConstants.SlotWeapon >= attacker.Equipment.Length)
+        if (CombatConstants.SlotWeapon < 0 || CombatConstants.SlotWeapon >= attacker.Equipment.Length)
         {
             ResetAttack(attacker);
             return;
@@ -139,7 +139,7 @@ public class PlayerVsPlayerCombat
                         int extraHit = CombatFormulas.Random(42);
                         target.AppendHit(extraHit, 0);
                         // Track special extra damage
-                        if (extraHit > 0 && attacker.PlayerId < target.KilledBy.Length)
+                        if (extraHit > 0 && attacker.PlayerId >= 0 && attacker.PlayerId < target.KilledBy.Length)
                             target.KilledBy[attacker.PlayerId] += extraHit;
                     }
 
@@ -149,7 +149,7 @@ public class PlayerVsPlayerCombat
                         int halberdHit = CombatFormulas.SpecialMaxHit(maxHit, spec.DamageMultiplier);
                         target.AppendHit(halberdHit, 0);
                         // Track special extra damage
-                        if (halberdHit > 0 && attacker.PlayerId < target.KilledBy.Length)
+                        if (halberdHit > 0 && attacker.PlayerId >= 0 && attacker.PlayerId < target.KilledBy.Length)
                             target.KilledBy[attacker.PlayerId] += halberdHit;
                     }
                 }
@@ -175,7 +175,7 @@ public class PlayerVsPlayerCombat
         target.AppendHit(hitDamage, 0);
         
         // Track damage for killer attribution
-        if (hitDamage > 0 && attacker.PlayerId < target.KilledBy.Length)
+        if (hitDamage > 0 && attacker.PlayerId >= 0 && attacker.PlayerId < target.KilledBy.Length)
             target.KilledBy[attacker.PlayerId] += hitDamage;
         attacker.CombatDelay = attacker.AttackDelay;
         attacker.RequestFaceTo(target.PlayerId + 32768);
@@ -243,7 +243,7 @@ public class PlayerVsPlayerCombat
         target.RequestAnim(424, 0);
         
         // Track damage for killer attribution
-        if (hitDamage > 0 && attacker.PlayerId < target.KilledBy.Length)
+        if (hitDamage > 0 && attacker.PlayerId >= 0 && attacker.PlayerId < target.KilledBy.Length)
             target.KilledBy[attacker.PlayerId] += hitDamage;
         attacker.CombatDelay = attacker.AttackDelay;
         attacker.RequestFaceTo(target.PlayerId + 32768);
@@ -273,7 +273,7 @@ public class PlayerVsPlayerCombat
         target.RequestAnim(424, 0);
         
         // Track damage for killer attribution
-        if (iceBowDamage > 0 && attacker.PlayerId < target.KilledBy.Length)
+        if (iceBowDamage > 0 && attacker.PlayerId >= 0 && attacker.PlayerId < target.KilledBy.Length)
             target.KilledBy[attacker.PlayerId] += iceBowDamage;
         target.FreezeDelay = 10;
         target.RequestGfx(8, 100);
@@ -294,7 +294,7 @@ public class PlayerVsPlayerCombat
         target.AppendHit(attacker.ThirdHit, 0);
         
         // Track damage for killer attribution (claw special hits)
-        if (attacker.PlayerId < target.KilledBy.Length)
+        if (attacker.PlayerId >= 0 && attacker.PlayerId < target.KilledBy.Length)
         {
             target.KilledBy[attacker.PlayerId] += attacker.SecondHit + attacker.ThirdHit;
         }
@@ -315,7 +315,7 @@ public class PlayerVsPlayerCombat
         target.RequestForceChat("Taste Vengeance!");
         
         // Track vengeance damage for killer attribution (victim becomes attacker)
-        if (vengDamage > 0 && target.PlayerId < attacker.KilledBy.Length)
+        if (vengDamage > 0 && target.PlayerId >= 0 && target.PlayerId < attacker.KilledBy.Length)
             attacker.KilledBy[target.PlayerId] += vengDamage;
         target.VengOn = false;
     }

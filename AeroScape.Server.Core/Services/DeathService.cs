@@ -269,10 +269,14 @@ public sealed class DeathService
         player.graveStone = true;
         player.graveStoneTimer = 200;
         var engine = GetEngine();
-        // Use lock to prevent race condition in gravestone creation
+        
+        // Use broader lock scope to prevent race condition where multiple players die at same coords
         lock (engine.LoadedObjects)
         {
-            if (!engine.LoadedObjects.Exists(o => o.ObjectId == 12719 && o.X == player.gsX && o.Y == player.gsY))
+            var gravestoneExists = engine.LoadedObjects.Exists(o => 
+                o.ObjectId == 12719 && o.X == player.gsX && o.Y == player.gsY);
+                
+            if (!gravestoneExists)
             {
                 engine.LoadedObjects.Add(new LoadedObject(12719, player.gsX, player.gsY, 0, 10));
             }

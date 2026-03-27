@@ -164,8 +164,10 @@ public sealed class MagicService(PlayerItemsService playerItems, IClientUiServic
 
     private bool TryAlchemy(Player player, int itemId, int slot, int spellId, int fireRunes, int levelIndex)
     {
-        // Add bounds checking for array access
-        if (levelIndex < 0 || levelIndex >= ModernLevelRequirements.Length || levelIndex >= ModernSpellXp.Length)
+        // Add bounds checking for array access - check each array individually
+        if (levelIndex < 0 || levelIndex >= ModernLevelRequirements.Length)
+            return false;
+        if (levelIndex >= ModernSpellXp.Length)
             return false;
             
         if (player.MagicDelay > 0 || player.SkillLvl[6] < ModernLevelRequirements[levelIndex] || !HasRunes(player, (561, 1), (554, fireRunes)))
@@ -184,8 +186,10 @@ public sealed class MagicService(PlayerItemsService playerItems, IClientUiServic
 
     private bool CastBonesSpell(Player player, int outputItemId, int buttonId, int earth, int water, int nature)
     {
-        // Add bounds checking for array access
-        if (buttonId < 0 || buttonId >= ModernLevelRequirements.Length || buttonId >= ModernSpellXp.Length)
+        // Add bounds checking for array access - check each array individually
+        if (buttonId < 0 || buttonId >= ModernLevelRequirements.Length)
+            return false;
+        if (buttonId >= ModernSpellXp.Length)
             return false;
             
         if (player.SkillLvl[6] < ModernLevelRequirements[buttonId] || playerItems.InvItemCount(player, 526) <= 0)
@@ -205,8 +209,10 @@ public sealed class MagicService(PlayerItemsService playerItems, IClientUiServic
 
     private bool CastTeleport(Player player, int buttonId, int x, int y, params (int ItemId, int Amount)[] runes)
     {
-        // Add bounds checking for array access
-        if (buttonId < 0 || buttonId >= ModernLevelRequirements.Length || buttonId >= ModernSpellXp.Length)
+        // Add bounds checking for array access - check each array individually
+        if (buttonId < 0 || buttonId >= ModernLevelRequirements.Length)
+            return false;
+        if (buttonId >= ModernSpellXp.Length)
             return false;
             
         if (player.MagicDelay > 0 || player.SkillLvl[6] < ModernLevelRequirements[buttonId] || !HasRunes(player, runes))

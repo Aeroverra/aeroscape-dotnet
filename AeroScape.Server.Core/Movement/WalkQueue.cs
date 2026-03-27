@@ -4,6 +4,7 @@ using AeroScape.Server.Core.Entities;
 using AeroScape.Server.Core.Frames;
 using AeroScape.Server.Core.Messages;
 using AeroScape.Server.Network.Frames;
+using Microsoft.Extensions.Logging;
 
 namespace AeroScape.Server.Core.Movement;
 
@@ -17,10 +18,12 @@ public sealed class WalkQueue
     private static readonly sbyte[] DirectionDeltaY = { 1, 1, 1, 0, 0, -1, -1, -1 };
 
     private readonly GameFrames _frames;
+    private readonly ILogger<WalkQueue>? _logger;
 
-    public WalkQueue(GameFrames frames)
+    public WalkQueue(GameFrames frames, ILogger<WalkQueue>? logger = null)
     {
         _frames = frames;
+        _logger = logger;
     }
 
     public void HandleWalk(Player player, WalkMessage message)
@@ -203,8 +206,9 @@ public sealed class WalkQueue
             return;
         }
 
-        // Validate bounds before any array access - use actual array lengths instead of WalkingQueueSize
+        // Validate bounds before any array access - ensure consistency with Player.WalkingQueueSize
         if (player.WQueueWritePtr < 0 ||
+            player.WQueueWritePtr >= Player.WalkingQueueSize ||
             player.WQueueWritePtr >= player.WalkingQueueX.Length ||
             player.WQueueWritePtr >= player.WalkingQueueY.Length ||
             player.WQueueWritePtr >= player.WalkingQueue.Length)
@@ -213,7 +217,9 @@ public sealed class WalkQueue
         }
 
         // Validate read position bounds
-        if (player.WQueueWritePtr == 0 || (player.WQueueWritePtr - 1) >= player.WalkingQueueX.Length)
+        if (player.WQueueWritePtr == 0 || 
+            (player.WQueueWritePtr - 1) >= Player.WalkingQueueSize ||
+            (player.WQueueWritePtr - 1) >= player.WalkingQueueX.Length)
         {
             return;
         }
@@ -309,9 +315,10 @@ public sealed class WalkQueue
                 build(w);
                 await w.FlushToAsync(session.GetStream(), session.CancellationToken);
             }
-            catch
+            catch (Exception ex)
             {
-                // Silently handle network failures to prevent game thread crashes
+                // Log network failures while preventing game thread crashes
+                _logger?.LogWarning(ex, "Network write failed for player {PlayerId}", player.PlayerId);
             }
         });
     }
