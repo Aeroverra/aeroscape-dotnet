@@ -47,6 +47,9 @@ public sealed class DeathService
         player.SpecialAmountUpdateReq = true;
         player.RunEnergyUpdateReq = true;
         player.SkulledUpdateReq = true;
+        
+        // Reset killer tracking after death
+        Array.Clear(player.KilledBy);
     }
 
     public void ProcessNpcDeath(NPC npc)

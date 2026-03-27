@@ -135,11 +135,23 @@ public class PlayerVsPlayerCombat
 
                     // Dragon dagger extra hit
                     if (weaponId == 5698)
-                        target.AppendHit(CombatFormulas.Random(42), 0);
+                    {
+                        int extraHit = CombatFormulas.Random(42);
+                        target.AppendHit(extraHit, 0);
+                        // Track special extra damage
+                        if (extraHit > 0 && attacker.PlayerId < target.KilledBy.Length)
+                            target.KilledBy[attacker.PlayerId] += extraHit;
+                    }
 
                     // Dragon halberd extra hit
                     if (weaponId == 3204)
-                        target.AppendHit(CombatFormulas.SpecialMaxHit(maxHit, spec.DamageMultiplier), 0);
+                    {
+                        int halberdHit = CombatFormulas.SpecialMaxHit(maxHit, spec.DamageMultiplier);
+                        target.AppendHit(halberdHit, 0);
+                        // Track special extra damage
+                        if (halberdHit > 0 && attacker.PlayerId < target.KilledBy.Length)
+                            target.KilledBy[attacker.PlayerId] += halberdHit;
+                    }
                 }
             }
             else
@@ -229,6 +241,10 @@ public class PlayerVsPlayerCombat
 
         target.AppendHit(hitDamage, 0);
         target.RequestAnim(424, 0);
+        
+        // Track damage for killer attribution
+        if (hitDamage > 0 && attacker.PlayerId < target.KilledBy.Length)
+            target.KilledBy[attacker.PlayerId] += hitDamage;
         attacker.CombatDelay = attacker.AttackDelay;
         attacker.RequestFaceTo(target.PlayerId + 32768);
 
@@ -252,8 +268,13 @@ public class PlayerVsPlayerCombat
 
         // Crystal bow uses Misc.random(30) in Java
         int maxHit = 30;
-        target.AppendHit(CombatFormulas.Random(maxHit), 0);
+        int iceBowDamage = CombatFormulas.Random(maxHit);
+        target.AppendHit(iceBowDamage, 0);
         target.RequestAnim(424, 0);
+        
+        // Track damage for killer attribution
+        if (iceBowDamage > 0 && attacker.PlayerId < target.KilledBy.Length)
+            target.KilledBy[attacker.PlayerId] += iceBowDamage;
         target.FreezeDelay = 10;
         target.RequestGfx(8, 100);
     }
@@ -271,6 +292,12 @@ public class PlayerVsPlayerCombat
         attacker.fourHit = attacker.FourthHit;
         target.AppendHit(attacker.SecondHit, 0);
         target.AppendHit(attacker.ThirdHit, 0);
+        
+        // Track damage for killer attribution (claw special hits)
+        if (attacker.PlayerId < target.KilledBy.Length)
+        {
+            target.KilledBy[attacker.PlayerId] += attacker.SecondHit + attacker.ThirdHit;
+        }
         attacker.ClawTimer = 1;
         attacker.UseClaws = true;
     }
@@ -283,8 +310,13 @@ public class PlayerVsPlayerCombat
         if (!target.VengOn || hitDamage <= 0)
             return;
 
-        attacker.AppendHit((hitDamage / 4) * 3, 0);
+        int vengDamage = (hitDamage / 4) * 3;
+        attacker.AppendHit(vengDamage, 0);
         target.RequestForceChat("Taste Vengeance!");
+        
+        // Track vengeance damage for killer attribution (victim becomes attacker)
+        if (vengDamage > 0 && target.PlayerId < attacker.KilledBy.Length)
+            attacker.KilledBy[target.PlayerId] += vengDamage;
         target.VengOn = false;
     }
 
