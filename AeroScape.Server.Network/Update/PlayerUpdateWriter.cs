@@ -297,10 +297,12 @@ public sealed class PlayerUpdateWriter
                     }
                     else
                     {
-                        str.WriteDWord(0);
-                        str.WriteDWord(0);
-                        str.WriteDWord(0);
-                        str.WriteDWord(0);
+                        // Missing XTEA keys — teleport player to Varrock and abort region frame
+                        // (matches Java Frames.java:1127-1131)
+                        p.SetCoords(3254, 3420, 0);
+                        // Send teleport message like Java
+                        // Note: This will require the region frame to be rebuilt with safe location
+                        return;
                     }
                 }
             }

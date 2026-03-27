@@ -42,8 +42,9 @@ public sealed class TradingService(GameEngine engine, PlayerItemsService playerI
                 {
                     player.TradeStage = 2;
                     partner.TradeStage = 2;
-                    player.TradeAccept[0] = false;
-                    partner.TradeAccept[0] = false;
+                    // Java sets both to true before screen transition (PlayerTrade.java:63-64)
+                    player.TradeAccept[0] = true;
+                    partner.TradeAccept[0] = true;
                     OpenSecondScreen(player, partner);
                 }
                 else
@@ -405,8 +406,19 @@ public sealed class TradingService(GameEngine engine, PlayerItemsService playerI
         player.TradeConfirmTextPartner = string.Empty;
     }
 
-    private Player? GetPartner(Player player) =>
-        player.TradePlayer > 0 && player.TradePlayer < engine.Players.Length ? engine.Players[player.TradePlayer] : null;
+    private Player? GetPartner(Player player)
+    {
+        if (player.TradePlayer <= 0 || player.TradePlayer >= engine.Players.Length)
+            return null;
+            
+        var partner = engine.Players[player.TradePlayer];
+        
+        // Add bidirectional validation like Java PlayerTrade.java checkStage():77-83  
+        if (partner?.TradePlayer != player.PlayerId)
+            return null;
+            
+        return partner;
+    }
 
     private int GetTradeItemSlot(Player player, int itemId)
     {

@@ -1,8 +1,10 @@
 using AeroScape.Server.Core.Entities;
+using AeroScape.Server.Core.Frames;
+using AeroScape.Server.Network.Frames;
 
 namespace AeroScape.Server.Core.Items;
 
-public sealed class PlayerBankService(ItemDefinitionLoader itemDefinitions, PlayerItemsService playerItems)
+public sealed class PlayerBankService(ItemDefinitionLoader itemDefinitions, PlayerItemsService playerItems, GameFrames frames)
 {
     public const int Size = Player.BankSize;
 
@@ -41,7 +43,7 @@ public sealed class PlayerBankService(ItemDefinitionLoader itemDefinitions, Play
         {
             Insert(player, GetFreeBankSlot(player), freeBankSlot);
             IncreaseTabStartSlots(player, player.ViewingBankTab);
-            player.ViewingBankTab = 10;
+            // Removed automatic switch to main tab - should stay on current tab (Java PlayerBank.java:36-37)
             SendTabConfig(player);
         }
 
@@ -402,6 +404,33 @@ public sealed class PlayerBankService(ItemDefinitionLoader itemDefinitions, Play
 
     private void RefreshBankUi(Player player)
     {
-        player.BankFreeSlotCount = Math.Max(0, GetFreeBankSlot(player));
+        // Count total free slots, not just the index of the first free slot
+        int freeSlots = 0;
+        for (var i = 0; i < Size; i++)
+        {
+            if (player.BankItems[i] == -1)
+            {
+                freeSlots++;
+            }
+        }
+        player.BankFreeSlotCount = freeSlots;
+
+        // Send missing frame updates like Java PlayerBank.java:72-76
+        Write(player, w =>
+        {
+            frames.SetString(w, freeSlots.ToString(), 762, 97);
+            frames.SetItems(w, -1, 64207, 95, player.BankItems, player.BankItemsN);
+        });
+    }
+
+    private static void Write(Player player, Action<FrameWriter> build)
+    {
+        var session = player.Session;
+        if (session is null)
+            return;
+
+        using var w = new FrameWriter(4096);
+        build(w);
+        w.FlushToAsync(session.GetStream(), session.CancellationToken).GetAwaiter().GetResult();
     }
 }

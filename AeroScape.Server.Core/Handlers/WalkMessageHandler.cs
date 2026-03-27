@@ -37,6 +37,13 @@ public class WalkMessageHandler : IMessageHandler<WalkMessage>
             message.IsRunning,
             message.PacketId);
 
+        // Check for freeze delay - match Java Walking.java:55-57
+        if (player.FreezeDelay > 0)
+        {
+            session.SendMessage("You cant move! Your frozen!");
+            return Task.CompletedTask;
+        }
+
         _walkQueue.HandleWalk(player, message);
 
         return Task.CompletedTask;

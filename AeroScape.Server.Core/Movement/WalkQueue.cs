@@ -56,7 +56,7 @@ public sealed class WalkQueue
             {
                 int relX = player.TeleportToX - (player.MapRegionX - 6) * 8;
                 int relY = player.TeleportToY - (player.MapRegionY - 6) * 8;
-                if (relX >= 16 && relX < 88 && relY >= 16 && relY < 88)
+                if (relX >= 2 * 8 && relX < 11 * 8 && relY >= 2 * 8 && relY < 11 * 8)
                 {
                     player.MapRegionDidChange = false;
                 }
@@ -95,9 +95,24 @@ public sealed class WalkQueue
             player.RunDir = GetNextWalkingDirection(player);
         }
 
-        if (player.CurrentX < 16 || player.CurrentX >= 88 || player.CurrentY < 16 || player.CurrentY >= 88)
+        if (player.CurrentX < 2 * 8)
         {
             player.MapRegionDidChange = true;
+        }
+        else if (player.CurrentX >= 11 * 8)
+        {
+            player.MapRegionDidChange = true;
+        }
+        if (player.CurrentY < 2 * 8)
+        {
+            player.MapRegionDidChange = true;
+        }
+        else if (player.CurrentY >= 11 * 8)
+        {
+            player.MapRegionDidChange = true;
+        }
+        if (player.MapRegionDidChange)
+        {
             player.TeleportToX = player.AbsX;
             player.TeleportToY = player.AbsY;
         }

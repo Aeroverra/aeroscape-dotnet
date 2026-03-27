@@ -1,8 +1,10 @@
 using AeroScape.Server.Core.Entities;
+using AeroScape.Server.Core.Frames;
+using AeroScape.Server.Network.Frames;
 
 namespace AeroScape.Server.Core.Items;
 
-public sealed class PlayerEquipmentService(ItemDefinitionLoader items, PlayerItemsService playerItems)
+public sealed class PlayerEquipmentService(ItemDefinitionLoader items, PlayerItemsService playerItems, GameFrames frames)
 {
     private static readonly string[] Capes = ["cape", "Cape", "cloak", "Cloak"];
     private static readonly string[] Hats =
@@ -142,6 +144,19 @@ public sealed class PlayerEquipmentService(ItemDefinitionLoader items, PlayerIte
         ApplyWeaponState(player);
         CheckSpecials(player);
         RecalculateBonuses(player);
+        
+        // Check for ancient staff magic interface switch like Java Equipment.java:258
+        if (targetSlot == 3 && itemId == 4675) // Ancient staff equipped in weapon slot
+        {
+            player.IsAncients = 1;
+            // Send magic interface update like Java
+            Write(player, w => frames.SetInterface(w, 1, 746, 93, 193));
+        }
+        else if (targetSlot == 3 && itemId != 4675) // Other weapon equipped, reset ancients
+        {
+            player.IsAncients = 0;
+        }
+        
         player.AppearanceUpdateReq = true;
         player.UpdateReq = true;
         return true;
@@ -402,6 +417,8 @@ public sealed class PlayerEquipmentService(ItemDefinitionLoader items, PlayerIte
         if (itemName.Contains("dragon", StringComparison.OrdinalIgnoreCase) && itemName.Contains("dagger", StringComparison.OrdinalIgnoreCase)) return 60;
         if (itemName.Contains("godsword", StringComparison.OrdinalIgnoreCase)) return 75;
         if (itemName is "Abyssal whip" or "Granite maul" or "Saradomin sword" or "Staff of Light") return 70;
+        // Add missing 3rd age validation like Java Equipment.java:545
+        if (itemName.Contains("3rd age", StringComparison.OrdinalIgnoreCase)) return 75;
         return 0;
     }
 
@@ -518,4 +535,15 @@ public sealed class PlayerEquipmentService(ItemDefinitionLoader items, PlayerIte
 
     private static bool EndsWithAny(string value, IEnumerable<string> needles) =>
         needles.Any(needle => value.EndsWith(needle, StringComparison.Ordinal));
+
+    private static void Write(Player player, Action<FrameWriter> build)
+    {
+        var session = player.Session;
+        if (session is null)
+            return;
+
+        using var w = new FrameWriter(4096);
+        build(w);
+        w.FlushToAsync(session.GetStream(), session.CancellationToken).GetAwaiter().GetResult();
+    }
 }
