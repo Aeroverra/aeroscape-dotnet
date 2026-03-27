@@ -359,7 +359,7 @@ public class PlayerVsNpcCombat
         if (npcType == 742 && attacker.DragonSlayer == 3)
         {
             // Check inventory space before advancing quest state
-            if (_playerItems.FreeSlots(attacker) > 0)
+            if (_playerItems.FreeSlotCount(attacker) > 0)
             {
                 attacker.HeadTimer = 8;
                 attacker.DragonSlayer = 4;
