@@ -65,6 +65,7 @@ builder.Services.AddSingleton<MagicService>();
 builder.Services.AddSingleton<IClientUiService, ClientUiService>();
 builder.Services.AddSingleton<ClanChatService>();
 builder.Services.AddSingleton<IClanChatPersistenceService, ClanChatPersistenceService>();
+builder.Services.AddHostedService<ClanChatSaveService>();
 builder.Services.AddSingleton<BountyHunterService>();
 builder.Services.AddSingleton<ConstructionService>();
 builder.Services.AddSingleton<CastleWarsService>();

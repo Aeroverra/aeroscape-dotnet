@@ -203,6 +203,30 @@ public sealed class ClanChatService
         _channels[channel.Owner] = channel;
     }
 
+    public async Task SaveAllChannelsAsync()
+    {
+        if (_persistence == null) return;
+
+        var saveTasks = new List<Task>();
+
+        foreach (var (ownerName, channel) in _channels)
+        {
+            saveTasks.Add(Task.Run(async () =>
+            {
+                try
+                {
+                    await _persistence.SaveChannelAsync(ownerName, channel);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to save clan channel for {Owner}", ownerName);
+                }
+            }));
+        }
+
+        await Task.WhenAll(saveTasks);
+    }
+
     public bool LootShareOn(Player player)
         => FindPlayersChannel(player)?.LootShareOn == true;
 

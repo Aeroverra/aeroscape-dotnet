@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using AeroScape.Server.Core.Items;
 using AeroScape.Server.Core.Messages;
 using AeroScape.Server.Core.Session;
-using AeroScape.Server.Network.Frames;
+using AeroScape.Server.Core.Frames;
 
 namespace AeroScape.Server.Core.Handlers;
 
