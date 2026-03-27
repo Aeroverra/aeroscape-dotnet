@@ -111,9 +111,13 @@ public class PlayerVsPlayerCombat
     /// </summary>
     private void ProcessMeleeAttack(Player attacker, Player target)
     {
+        // Calculate prayer bonus for strength
+        double prayerMultiplier = GetStrengthPrayerMultiplier(attacker);
+        
         int maxHit = CombatFormulas.MaxMeleeHit(
             attacker.SkillLvl[CombatConstants.SkillStrength],
-            attacker.EquipmentBonus[CombatConstants.BonusStrength]);
+            attacker.EquipmentBonus[CombatConstants.BonusStrength],
+            prayerMultiplier);
         int hitDamage = CombatFormulas.Random(maxHit);
 
         int weaponId = attacker.Equipment[CombatConstants.SlotWeapon];
@@ -452,6 +456,27 @@ public class PlayerVsPlayerCombat
 
     private static bool IsInArena(Player p)
         => IsAtDuel(p) || IsAtPits(p) || IsAtCastleWars(p);
+
+    /// <summary>
+    /// Get the strength prayer multiplier based on active prayers.
+    /// </summary>
+    private static double GetStrengthPrayerMultiplier(Player player)
+    {
+        // Prayer indices from Java:
+        // 1 = Burst of Strength (5%)
+        // 6 = Superhuman Strength (10%) 
+        // 14 = Ultimate Strength (15%)
+        // 25 = Chivalry (18%)
+        // 26 = Piety (23%)
+        
+        if (player.PrayOn[26]) return 1.23; // Piety
+        if (player.PrayOn[25]) return 1.18; // Chivalry
+        if (player.PrayOn[14]) return 1.15; // Ultimate Strength
+        if (player.PrayOn[6]) return 1.10; // Superhuman Strength
+        if (player.PrayOn[1]) return 1.05; // Burst of Strength
+        
+        return 1.0; // No strength prayer
+    }
 
     /// <summary>
     /// Reset the player's PvP combat state.

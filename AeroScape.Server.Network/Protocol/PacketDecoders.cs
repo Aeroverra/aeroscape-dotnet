@@ -447,16 +447,17 @@ public sealed class ObjectOption1Decoder : IPacketDecoder
 /// <summary>Object option 2: opcode 228.</summary>
 public sealed class ObjectOption2Decoder : IPacketDecoder
 {
-    public Type MessageType => typeof(PlayerOption2Message);
+    public Type MessageType => typeof(ObjectOption2Message);
 
     public object? Decode(PlayerSession session, int opcode, ReadOnlySequence<byte> payload)
     {
-        // Java ObjectOption2.java handles player interactions, reading playerId then using player coordinates
-        // Fixed: This should be a PlayerOption2Message, not ObjectOption2Message to match Java behavior
+        // Based on ObjectOption1 pattern and expected ObjectOption2Message structure
+        // This decoder should read object interaction data, not player interaction data
         var r = new RsReader(payload);
-        int playerId = r.ReadUnsignedWord();
-        // Return correct message type that matches Java behavior
-        return new PlayerOption2Message(playerId);
+        int y = r.ReadUnsignedWordBigEndianA();
+        int x = r.ReadUnsignedWordBigEndian();
+        int objId = r.ReadUnsignedWord();
+        return new ObjectOption2Message(objId, x, y);
     }
 }
 

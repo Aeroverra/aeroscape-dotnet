@@ -37,16 +37,16 @@ public static class CombatFormulas
 
     /// <summary>
     /// Maximum melee hit based on strength level and equipment strength bonus.
-    /// Formula: floor(str * (bonus * 0.00175 + 0.1) + 2.05)
+    /// Formula: floor(str * (bonus * 0.00175 + 0.1) + 2.05) * prayerMultiplier
     /// Ported from PlayerCombat.maxMeleeHit / PlayerNPCCombat.maxMeleeHit.
     /// </summary>
-    public static int MaxMeleeHit(int strengthLevel, int strengthBonus)
+    public static int MaxMeleeHit(int strengthLevel, int strengthBonus, double prayerMultiplier = 1.0)
     {
         double a = strengthLevel;
         double b = strengthBonus;
         double f = b * 0.00175 + 0.1;
         double h = Math.Floor(a * f + 2.05);
-        return (int)h;
+        return (int)(h * prayerMultiplier);
     }
 
     /// <summary>

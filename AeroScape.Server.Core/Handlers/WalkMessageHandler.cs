@@ -25,11 +25,11 @@ public class WalkMessageHandler : IMessageHandler<WalkMessage>
         _ui = ui;
     }
 
-    public Task HandleAsync(PlayerSession session, WalkMessage message, CancellationToken cancellationToken)
+    public async Task HandleAsync(PlayerSession session, WalkMessage message, CancellationToken cancellationToken)
     {
         var player = session.Entity;
         if (player is null)
-            return Task.CompletedTask;
+            return;
 
         _logger.LogDebug(
             "Player {Username} walking: first=({X}, {Y}) steps={Steps} running={Running} opcode={Opcode}",
@@ -44,11 +44,32 @@ public class WalkMessageHandler : IMessageHandler<WalkMessage>
         if (player.FreezeDelay > 0)
         {
             _ui.SendMessage(player, "You cant move! Your frozen!");
-            return Task.CompletedTask;
+            return;
+        }
+
+        // Reset all interaction states as per Java Walking.java lines 45-54
+        player.ItemPickup = false;
+        player.PlayerOption1 = false;
+        player.PlayerOption2 = false;
+        player.PlayerOption3 = false;
+        player.NpcOption1 = false;
+        player.NpcOption2 = false;
+        player.ObjectOption1 = false;
+        player.ObjectOption2 = false;
+        player.AttackingPlayer = false;
+        player.AttackingNPC = false;
+        player.usingAutoCast = false;
+
+        // UI restoration would be handled here if methods were available in IClientUiService
+        // For now, we'll just close any open interface
+        // TODO: Add methods to IClientUiService for RemoveShownInterface, RestoreTabs, etc.
+
+        // Reset face-to request if needed (Java line 60-62)
+        if (player.FaceToReq != 65535)
+        {
+            player.RequestFaceTo(65535);
         }
 
         _walkQueue.HandleWalk(player, message);
-
-        return Task.CompletedTask;
     }
 }

@@ -3,6 +3,7 @@ using AeroScape.Server.Core.Entities;
 using AeroScape.Server.Core.Frames;
 using AeroScape.Server.Core.Util;
 using AeroScape.Server.Core.World;
+using static AeroScape.Server.Core.Combat.CombatConstants;
 
 namespace AeroScape.Server.Network.Update;
 
@@ -516,21 +517,21 @@ public sealed class PlayerUpdateWriter
                 if (p.Equipment[i] > 0) props.WriteWord(32768 + _appearanceData.GetRealId(p.Equipment[i]));
                 else props.WriteByte(0);
             }
-            if (p.Equipment[4] > 0) props.WriteWord(32768 + _appearanceData.GetRealId(p.Equipment[4]));
+            if (p.Equipment[SlotChest] > 0) props.WriteWord(32768 + _appearanceData.GetRealId(p.Equipment[SlotChest]));
             else props.WriteWord(0x100 + p.Look[2]);
-            if (p.Equipment[5] > 0) props.WriteWord(32768 + _appearanceData.GetRealId(p.Equipment[5]));
+            if (p.Equipment[SlotShield] > 0) props.WriteWord(32768 + _appearanceData.GetRealId(p.Equipment[SlotShield]));
             else props.WriteByte(0);
-            if (!_appearanceData.IsFullbody(p.Equipment[4])) props.WriteWord(0x100 + p.Look[3]);
+            if (!_appearanceData.IsFullbody(p.Equipment[SlotChest])) props.WriteWord(0x100 + p.Look[3]);
             else props.WriteByte(0);
-            if (p.Equipment[7] > 0) props.WriteWord(32768 + _appearanceData.GetRealId(p.Equipment[7]));
+            if (p.Equipment[SlotLegs] > 0) props.WriteWord(32768 + _appearanceData.GetRealId(p.Equipment[SlotLegs]));
             else props.WriteWord(0x100 + p.Look[5]);
-            if (!_appearanceData.IsFullhat(p.Equipment[0]) && !_appearanceData.IsFullmask(p.Equipment[0])) props.WriteWord(0x100 + p.Look[0]);
+            if (!_appearanceData.IsFullhat(p.Equipment[SlotHead]) && !_appearanceData.IsFullmask(p.Equipment[SlotHead])) props.WriteWord(0x100 + p.Look[0]);
             else props.WriteByte(0);
-            if (p.Equipment[9] > 0) props.WriteWord(32768 + _appearanceData.GetRealId(p.Equipment[9]));
+            if (p.Equipment[SlotHands] > 0) props.WriteWord(32768 + _appearanceData.GetRealId(p.Equipment[SlotHands]));
             else props.WriteWord(0x100 + p.Look[4]);
-            if (p.Equipment[10] > 0) props.WriteWord(32768 + _appearanceData.GetRealId(p.Equipment[10]));
+            if (p.Equipment[SlotFeet] > 0) props.WriteWord(32768 + _appearanceData.GetRealId(p.Equipment[SlotFeet]));
             else props.WriteWord(0x100 + p.Look[6]);
-            if (!_appearanceData.IsFullmask(p.Equipment[0])) props.WriteWord(0x100 + p.Look[1]);
+            if (!_appearanceData.IsFullmask(p.Equipment[SlotHead])) props.WriteWord(0x100 + p.Look[1]);
             else props.WriteByte(0);
         }
         else
@@ -564,7 +565,7 @@ public sealed class PlayerUpdateWriter
         str.WriteBytes(props.WrittenSpan.ToArray(), props.Length, 0);
     }
 
-    private static int CheckCopter(Player p, int i) => p.Equipment[3] == 12842 ? 8961 : OtherEmotes[i];
+    private static int CheckCopter(Player p, int i) => p.Equipment[SlotWeapon] == 12842 ? 8961 : OtherEmotes[i];
 
     private static void CalculateCombat(Player p)
     {
