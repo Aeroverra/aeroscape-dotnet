@@ -166,9 +166,9 @@ public sealed class PacketRouter
             }
             else if (size == PacketDefinition.UnknownSize)
             {
-                _logger.LogDebug("Stopping on unknown-size opcode {Opcode} for session {SessionId}", opcode, session.SessionId);
-                reader.Rewind(1);
-                break;
+                // Skip unknown/unused opcodes - don't break the packet loop
+                _logger.LogTrace("Skipping unknown opcode {Opcode} for session {SessionId}", opcode, session.SessionId);
+                continue;  // Skip this packet, parse next one
             }
 
             if (size < 0 || size >= 500)
