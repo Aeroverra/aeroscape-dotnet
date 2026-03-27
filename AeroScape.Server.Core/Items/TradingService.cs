@@ -231,6 +231,24 @@ public sealed class TradingService(GameEngine engine, PlayerItemsService playerI
         var playerItemsSnapshot = SnapshotTradeItems(player);
         var partnerItemsSnapshot = SnapshotTradeItems(partner);
 
+        // Critical: Validate inventory space before completing trade to prevent duplication
+        if (!CanReceiveTradeItems(player, partnerItemsSnapshot) || 
+            !CanReceiveTradeItems(partner, playerItemsSnapshot))
+        {
+            // Not enough inventory space - abort trade and restore items
+            RestoreTradeItems(player);
+            RestoreTradeItems(partner);
+            player.LastTickMessage = "Not enough inventory space to complete trade.";
+            partner.LastTickMessage = "Not enough inventory space to complete trade.";
+            DeclineTrade(player);
+            return;
+        }
+
+        // Space validated - safe to complete trade
+        // Clear trade containers first to prevent duplication
+        ClearTradeContainers(player);
+        ClearTradeContainers(partner);
+        
         foreach (var (itemId, amount) in partnerItemsSnapshot)
         {
             playerItems.AddItem(player, itemId, amount);
@@ -243,6 +261,69 @@ public sealed class TradingService(GameEngine engine, PlayerItemsService playerI
 
         ResetTrade(player);
         ResetTrade(partner);
+    }
+
+    private bool CanReceiveTradeItems(Player player, (int ItemId, int Amount)[] items)
+    {
+        // Calculate required inventory slots for trade items
+        var requiredSlots = 0;
+        foreach (var (itemId, amount) in items)
+        {
+            if (itemDefinitions.IsStackable(itemId) || itemDefinitions.IsNoted(itemId))
+            {
+                // Stackable items only need one slot per unique item type
+                var existingSlot = GetInventorySlot(player, itemId);
+                if (existingSlot < 0) // New item type
+                    requiredSlots++;
+            }
+            else
+            {
+                // Non-stackable items need one slot per item
+                requiredSlots += amount;
+            }
+        }
+
+        var availableSlots = GetFreeInventorySlotCount(player);
+        return availableSlots >= requiredSlots;
+    }
+
+    private int GetFreeInventorySlotCount(Player player)
+    {
+        var count = 0;
+        for (var i = 0; i < player.Items.Length; i++)
+        {
+            if (player.Items[i] == -1)
+                count++;
+        }
+        return count;
+    }
+
+    private int GetInventorySlot(Player player, int itemId)
+    {
+        for (var i = 0; i < player.Items.Length; i++)
+        {
+            if (player.Items[i] == itemId)
+                return i;
+        }
+        return -1;
+    }
+
+    private void RestoreTradeItems(Player player)
+    {
+        // Return all trade items to player inventory
+        for (var i = 0; i < player.TradeItems.Length; i++)
+        {
+            if (player.TradeItems[i] > 0)
+            {
+                playerItems.AddItem(player, player.TradeItems[i], player.TradeItemsN[i]);
+            }
+        }
+    }
+
+    private void ClearTradeContainers(Player player)
+    {
+        Array.Fill(player.TradeItems, -1);
+        Array.Fill(player.TradeItemsN, 0);
     }
 
     private void OfferItem(Player player, int itemId, int amount)
