@@ -147,6 +147,10 @@ public class ActionButtonsMessageHandler : IMessageHandler<ActionButtonsMessage>
                     {
                         switch (message.PacketOpcode)
                         {
+                            case 233: // Value
+                                int shopValue = _shops.GetPrice(player.ShopId, message.SlotId);
+                                _ui.SendMessage(player, $"This item costs {shopValue} coin{(shopValue != 1 ? "s" : "")}.");
+                                break;
                             case 21:
                                 _shops.Buy(player, itemId, 1);
                                 break;
@@ -155,6 +159,10 @@ public class ActionButtonsMessageHandler : IMessageHandler<ActionButtonsMessage>
                                 break;
                             case 214:
                                 _shops.Buy(player, itemId, 10);
+                                break;
+                            case 90: // Examine
+                                // Would need item definition service for descriptions
+                                _ui.SendMessage(player, "Examine functionality not yet implemented.");
                                 break;
                         }
                     }

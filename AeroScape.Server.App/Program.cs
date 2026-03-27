@@ -133,7 +133,6 @@ builder.Services.AddScoped<IMessageHandler<StringInputMessage>, StringInputMessa
 builder.Services.AddScoped<IMessageHandler<LongInputMessage>, LongInputMessageHandler>();
 builder.Services.AddScoped<IMessageHandler<ClanKickMessage>, ClanKickMessageHandler>();
 builder.Services.AddScoped<IMessageHandler<ConstructionMessage>, ConstructionMessageHandler>();
-builder.Services.AddScoped<IMessageHandler<ButtonMessage>, ButtonMessageHandler>();
 
 // Inline-handled packet handlers (formerly processed in PacketManager.parsePacket)
 builder.Services.AddScoped<IMessageHandler<AddFriendMessage>, AddFriendMessageHandler>();
