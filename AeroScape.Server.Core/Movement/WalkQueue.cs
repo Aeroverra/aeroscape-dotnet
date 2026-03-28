@@ -27,10 +27,12 @@ public sealed class WalkQueue
 
     public void HandleWalk(Player player, WalkMessage message)
     {
-        _logger?.LogInformation("HandleWalk called for {Username}: first=({X},{Y}) running={Running}", 
-            player.Username, message.FirstX, message.FirstY, message.IsRunning);
+        _logger?.LogInformation("HandleWalk called for {Username}: first=({X},{Y}) running={Running} pathDeltas={PathCount}", 
+            player.Username, message.FirstX, message.FirstY, message.IsRunning, 
+            message.PathX?.Length ?? 0);
         
         Console.WriteLine($"[WALK] Before reset: ReadPtr={player.WQueueReadPtr}, WritePtr={player.WQueueWritePtr}");
+        Console.WriteLine($"[WALK] Path deltas: PathX.Length={message.PathX?.Length ?? 0}, PathY.Length={message.PathY?.Length ?? 0}");
         
         ClearInteractions(player);
         
@@ -46,18 +48,25 @@ public sealed class WalkQueue
         player.AutoCasting = false;
         player.IsRunning = message.IsRunning;
 
-        int firstX = message.FirstX - (player.MapRegionX - 6) * 8;
-        int firstY = message.FirstY - (player.MapRegionY - 6) * 8;
-
-        AddToWalkingQueue(player, firstX, firstY);
+        // FirstX/FirstY already have region base subtracted in WalkDecoder
+        AddToWalkingQueue(player, message.FirstX, message.FirstY);
+        
         // PathX/PathY are deltas from the previous position, so we need to accumulate
-        int currentX = firstX;
-        int currentY = firstY;
-        for (int i = 0; i < message.PathX.Length; i++)
+        // IMPORTANT: Check if there are any path deltas before looping!
+        if (message.PathX != null && message.PathY != null && message.PathX.Length > 0)
         {
-            currentX += message.PathX[i];
-            currentY += message.PathY[i];
-            AddToWalkingQueue(player, currentX, currentY);
+            int currentX = message.FirstX;
+            int currentY = message.FirstY;
+            
+            // Ensure PathX and PathY arrays have the same length
+            int pathLength = Math.Min(message.PathX.Length, message.PathY.Length);
+            
+            for (int i = 0; i < pathLength; i++)
+            {
+                currentX += message.PathX[i];
+                currentY += message.PathY[i];
+                AddToWalkingQueue(player, currentX, currentY);
+            }
         }
 
         if (player.FaceToReq != 65535)
